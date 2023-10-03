@@ -11,7 +11,10 @@ libraryDependencies ++= Seq(
   evolutions,
   guice,
   jdbc,
-  "org.postgresql" % "postgresql" % "42.6.0"
+  "org.postgresql" % "postgresql" % "42.6.0",
+  "com.pauldijou" %% "jwt-play" % "5.0.0",
+  "com.pauldijou" %% "jwt-core" % "5.0.0",
+  "com.auth0" % "jwks-rsa" % "0.6.1"
 )
 libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "6.0.0-RC2" % Test
 
