@@ -10,7 +10,7 @@ import scala.util.{Failure, Success}
 
 // A custom request type to hold our JWT claims, we can pass these on to the
 // handling action
-case class UserRequest[A](jwt: JwtClaim, token: String, request: Request[A]) extends WrappedRequest[A](request)
+case class UserRequest[A](jwt: (String, String, String), token: String, request: Request[A]) extends WrappedRequest[A](request)
 
 // Our custom action implementation
 class AuthAction @Inject()(bodyParser: BodyParsers.Default, authService: AuthService)(implicit ec: ExecutionContext)
@@ -26,7 +26,7 @@ class AuthAction @Inject()(bodyParser: BodyParsers.Default, authService: AuthSer
   // and allow the request to proceed if it is valid.
   override def invokeBlock[A](request: Request[A], block: UserRequest[A] => Future[Result]): Future[Result] =
     extractBearerToken(request) map { token =>
-      authService.validateJwt(token) match {
+      authService.validateToken(token) match {
         case Success(claim) => block(UserRequest(claim, token, request))      // token was valid - proceed!
         case Failure(t) => Future.successful(Results.Unauthorized(t.getMessage))  // token was invalid - return 401
       }

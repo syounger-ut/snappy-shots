@@ -3,7 +3,7 @@
 // Make sure it's in the 'controllers' package
 package controllers
 
-import auth.AuthAction
+import auth.{AuthAction, AuthService}
 
 import javax.inject.{Inject, Singleton}
 import play.api.mvc.{AbstractController, ControllerComponents}
@@ -14,7 +14,8 @@ import repositories.DataRepository
 class ApiController @Inject()(
   cc: ControllerComponents,
   dataRepository: DataRepository,
-  authAction: AuthAction
+  authAction: AuthAction,
+  authService: AuthService
 )
   extends AbstractController(cc) {
   
@@ -22,6 +23,11 @@ class ApiController @Inject()(
   // can get up and running with a basic implementation
   def ping = Action { implicit request =>
     Ok("Hello, Scala!")
+  }
+
+  // Login
+  def login = Action { implicit request =>
+    Ok(Json.obj("token" -> authService.createToken()))
   }
   
   // Get a single post

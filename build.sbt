@@ -7,13 +7,14 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
 scalaVersion := "2.13.12"
 
+val jwtScalaVersion = "9.4.4"
 libraryDependencies ++= Seq(
   evolutions,
   guice,
   jdbc,
   "org.postgresql" % "postgresql" % "42.6.0",
-  "com.pauldijou" %% "jwt-play" % "5.0.0",
-  "com.pauldijou" %% "jwt-core" % "5.0.0",
+  "com.github.jwt-scala" %% "jwt-core" % jwtScalaVersion,
+  "com.github.jwt-scala" %% "jwt-play" % jwtScalaVersion,
   "com.auth0" % "jwks-rsa" % "0.6.1"
 )
 libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "6.0.0-RC2" % Test
