@@ -1,5 +1,5 @@
 name := """auth-service"""
-organization := "com.example"
+organization := "com.authService"
 
 version := "1.0-SNAPSHOT"
 
@@ -15,7 +15,8 @@ libraryDependencies ++= Seq(
   "org.postgresql" % "postgresql" % "42.6.0",
   "com.github.jwt-scala" %% "jwt-core" % jwtScalaVersion,
   "com.github.jwt-scala" %% "jwt-play" % jwtScalaVersion,
-  "com.auth0" % "jwks-rsa" % "0.6.1"
+  "com.auth0" % "jwks-rsa" % "0.6.1",
+  "org.scalatest" %% "scalatest" % "3.2.17" % "test"
 )
 libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "6.0.0-RC2" % Test
 
