@@ -1,10 +1,9 @@
-package auth
+package com.authService.auth
 
-import javax.inject.Inject
-import pdi.jwt._
 import play.api.http.HeaderNames
 import play.api.mvc._
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 

@@ -1,4 +1,4 @@
-GET /api/ping                   controllers.ApiController.ping
-GET /api/post/:postId           controllers.ApiController.getPost(postId: Int)
-GET /api/post/:postId/comments  controllers.ApiController.getComments(postId: Int)
-GET /api/login                  controllers.AuthenticationController.login
+GET /api/ping                   com.authService.controllers.ApiController.ping
+GET /api/post/:postId           com.authService.controllers.ApiController.getPost(postId: Int)
+GET /api/post/:postId/comments  com.authService.controllers.ApiController.getComments(postId: Int)
+GET /api/login                  com.authService.controllers.AuthenticationController.login

@@ -1,14 +1,14 @@
 // app/controllers/ApiController.scala
 
 // Make sure it's in the 'controllers' package
-package controllers
+package com.authService.controllers
 
-import auth.AuthAction
+import com.authService.auth.AuthAction
+import com.authService.repositories.DataRepository
+import play.api.libs.json.Json
+import play.api.mvc.{AbstractController, ControllerComponents}
 
 import javax.inject.{Inject, Singleton}
-import play.api.mvc.{AbstractController, ControllerComponents}
-import play.api.libs.json.Json
-import repositories.DataRepository
 
 @Singleton
 class ApiController @Inject()(

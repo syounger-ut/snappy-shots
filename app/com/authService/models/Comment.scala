@@ -1,6 +1,6 @@
 // app/models/Comment.scala
 
-package models
+package com.authService.models
 
 import play.api.libs.json.{Json, OFormat}
 

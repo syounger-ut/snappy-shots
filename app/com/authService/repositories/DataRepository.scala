@@ -1,9 +1,10 @@
 // app/repositories/DataRepository.scala
 
-package repositories
+package com.authService.repositories
+
+import com.authService.models.{Comment, Post}
 
 import javax.inject.Singleton
-import models.{Comment, Post}
 
 @Singleton
 class DataRepository {

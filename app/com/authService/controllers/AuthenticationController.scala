@@ -1,11 +1,10 @@
-package controllers
+package com.authService.controllers
 
-import auth.{AuthAction, AuthService}
+import com.authService.auth.AuthService
+import play.api.libs.json.Json
+import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
 
 import javax.inject.{Inject, Singleton}
-import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
-import play.api.libs.json.Json
-import repositories.DataRepository
 
 @Singleton
 class AuthenticationController @Inject()(

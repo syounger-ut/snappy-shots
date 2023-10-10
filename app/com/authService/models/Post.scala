@@ -1,7 +1,7 @@
 // app/models/Post.scala
 
 // Make sure it goes in the models package
-package models
+package com.authService.models
 
 import play.api.libs.json.{Json, OFormat}
 

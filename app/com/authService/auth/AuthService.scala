@@ -1,9 +1,9 @@
-package auth
+package com.authService.auth
+
+import pdi.jwt.{Jwt, JwtAlgorithm}
 
 import java.time.Clock
-import pdi.jwt.{Jwt, JwtAlgorithm, JwtClaim, JwtHeader, JwtOptions}
-
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Try}
 
 class AuthService {
   implicit val clock: Clock = Clock.systemUTC
