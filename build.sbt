@@ -16,7 +16,8 @@ libraryDependencies ++= Seq(
   "com.github.jwt-scala" %% "jwt-core" % jwtScalaVersion,
   "com.github.jwt-scala" %% "jwt-play" % jwtScalaVersion,
   "com.auth0" % "jwks-rsa" % "0.6.1",
-  "org.scalatest" %% "scalatest" % "3.2.17" % "test"
+  "org.scalatest" %% "scalatest" % "3.2.17" % Test,
+  "org.scalamock" %% "scalamock" % "5.1.0" % Test
 )
 libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "6.0.0-RC2" % Test
 
