@@ -21,4 +21,12 @@ jobs:
           distribution: 'temurin'
           cache: 'sbt'
       - name: Run tests
-        run: sbt test
+        run: sbt clean coverage test
+      - name: Coverage Report
+        run: sbt coverageReport
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Formatting
+        run: sbt scalafmtSbtCheck scalafmtCheck test:scalafmtCheck
