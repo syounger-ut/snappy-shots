@@ -18,7 +18,10 @@ class AuthenticationControllerSpec extends UnitSpec {
   }
 
   it("should return an authentication token") {
-    val controller = new AuthenticationController(Helpers.stubControllerComponents(), mockAuthService)
+    val controller = new AuthenticationController(
+      Helpers.stubControllerComponents(),
+      mockAuthService
+    )
     val response = controller.login().apply(FakeRequest())
     val bodyText: String = contentAsString(response)
     assert(bodyText == """{"token":"fake-token"}""")

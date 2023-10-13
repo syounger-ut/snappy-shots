@@ -12,7 +12,8 @@ class AuthServiceSpec extends UnitSpec {
 
   describe("#createToken") {
     it("should should return a token") {
-      (mockJwt.encode (_: String, _: String, _: JwtAlgorithm))
+      (mockJwt
+        .encode(_: String, _: String, _: JwtAlgorithm))
         .expects(*, *, *)
         .returns("fake-jwt-token")
 
@@ -24,22 +25,31 @@ class AuthServiceSpec extends UnitSpec {
   describe("#validateToken") {
     describe("when the token is valid") {
       it("should succeed") {
-        (mockJwt.isValid (_: String, _: String, _: Seq[JwtHmacAlgorithm]))
+        (mockJwt
+          .isValid(_: String, _: String, _: Seq[JwtHmacAlgorithm]))
           .expects(*, *, *)
           .returns(true)
 
-        (mockJwt.decodeRawAll (_: String, _: String, _: Seq[JwtHmacAlgorithm]))
+        (mockJwt
+          .decodeRawAll(_: String, _: String, _: Seq[JwtHmacAlgorithm]))
           .expects(*, *, *)
           .returns(Success("mock-header", "mock-claim", "mock-signature"))
 
         val svs = new AuthService(mockJwt)
-        assert(svs.validateToken("mock-token") == Success("mock-header", "mock-claim", "mock-signature"))
+        assert(
+          svs.validateToken("mock-token") == Success(
+            "mock-header",
+            "mock-claim",
+            "mock-signature"
+          )
+        )
       }
     }
 
     describe("when the token is not valid") {
       it("should fail") {
-        (mockJwt.isValid(_: String, _: String, _: Seq[JwtHmacAlgorithm]))
+        (mockJwt
+          .isValid(_: String, _: String, _: Seq[JwtHmacAlgorithm]))
           .expects(*, *, *)
           .returns(false)
 
