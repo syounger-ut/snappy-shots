@@ -7,6 +7,12 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
 scalaVersion := "2.13.12"
 
+// Code coverage settings
+coverageFailOnMinimum := true
+coverageMinimumStmtTotal := 90
+coverageMinimumBranchTotal := 90
+coverageExcludedFiles := ".*\\/target\\/.*"
+
 val jwtScalaVersion = "9.4.4"
 libraryDependencies ++= Seq(
   evolutions,
