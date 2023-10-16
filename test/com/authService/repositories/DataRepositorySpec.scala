@@ -16,7 +16,11 @@ class DataRepositorySpec extends UnitSpec {
   describe("#getComments") {
     it("should return comments") {
       val subject = repository.getComments(2)
-      assert(subject == Seq(Comment(3, 2, "Great, thanks for this post", "Joe Bloggs")))
+      assert(
+        subject == Seq(
+          Comment(3, 2, "Great, thanks for this post", "Joe Bloggs")
+        )
+      )
     }
   }
 }

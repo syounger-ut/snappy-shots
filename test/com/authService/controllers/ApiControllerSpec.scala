@@ -12,9 +12,13 @@ import scala.util.Success
 
 class ApiControllerSpec extends UnitSpec {
   val mockDataRepository: DataRepository = mock[DataRepository]
-  val controllerComponents: ControllerComponents = Helpers.stubControllerComponents()
+  val controllerComponents: ControllerComponents =
+    Helpers.stubControllerComponents()
   val mockAuthService: AuthService = mock[AuthService]
-  val mockAuthAction: AuthAction = new AuthAction(controllerComponents.parsers.default, mockAuthService)(controllerComponents.executionContext)
+  val mockAuthAction: AuthAction =
+    new AuthAction(controllerComponents.parsers.default, mockAuthService)(
+      controllerComponents.executionContext
+    )
   val controller = new ApiController(
     controllerComponents,
     mockDataRepository,
@@ -44,7 +48,8 @@ class ApiControllerSpec extends UnitSpec {
 
       def setupDataRepository(mockResponse: Option[Post] = None) = {
         mockResponse match {
-          case Some(res) => (mockDataRepository.getPost _).expects(123).returns(Some(res))
+          case Some(res) =>
+            (mockDataRepository.getPost _).expects(123).returns(Some(res))
           case None => (mockDataRepository.getPost _).expects(123).returns(None)
         }
       }
@@ -90,7 +95,9 @@ class ApiControllerSpec extends UnitSpec {
       def setupResponse() = {
         setupAuth()
         setupDataRepository(mockComments)
-        controller.getComments(123).apply(FakeRequest().withHeaders(authHeaders))
+        controller
+          .getComments(123)
+          .apply(FakeRequest().withHeaders(authHeaders))
       }
 
       it("should return comments") {
@@ -98,7 +105,9 @@ class ApiControllerSpec extends UnitSpec {
         val responseStatus = status(response)
         val bodyText: String = contentAsString(response)
         assert(responseStatus == OK)
-        assert(bodyText == "[{\"id\":1,\"postId\":2,\"text\":\"A comment\",\"authorName\":\"Foo Bar\"}]")
+        assert(
+          bodyText == "[{\"id\":1,\"postId\":2,\"text\":\"A comment\",\"authorName\":\"Foo Bar\"}]"
+        )
       }
     }
   }
