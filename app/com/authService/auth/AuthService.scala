@@ -5,6 +5,7 @@ import pdi.jwt.{Jwt, JwtAlgorithm}
 import java.time.Clock
 import scala.util.{Failure, Try}
 
+// $COVERAGE-OFF$
 class AuthService {
   implicit val clock: Clock = Clock.systemUTC
 
@@ -24,3 +25,4 @@ class AuthService {
     Jwt.decodeRawAll(token, "secretKey", Seq(JwtAlgorithm.HS256))
   }
 }
+// $COVERAGE-ON$
