@@ -4,7 +4,7 @@ import com.authService.UnitSpec
 import com.authService.auth.{AuthAction, AuthService}
 import com.authService.models.{Comment, Post}
 import com.authService.repositories.DataRepository
-import play.api.mvc.ControllerComponents
+import play.api.mvc._
 import play.api.test._
 import play.api.test.Helpers._
 
@@ -16,7 +16,7 @@ class ApiControllerSpec extends UnitSpec {
     Helpers.stubControllerComponents()
   val mockAuthService: AuthService = mock[AuthService]
   val mockAuthAction: AuthAction =
-    new AuthAction(controllerComponents.parsers.default, mockAuthService)(
+    new AuthAction(mock[BodyParsers.Default], mockAuthService)(
       controllerComponents.executionContext
     )
   val controller = new ApiController(

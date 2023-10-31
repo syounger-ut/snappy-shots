@@ -1,10 +1,12 @@
 package com.authService.auth
 
+import akka.stream.testkit.NoMaterializer
 import com.authService.AsyncUnitSpec
 import play.api.http.Status.{OK, UNAUTHORIZED}
-import play.api.mvc.{Headers, Result}
+import play.api.mvc.{BodyParsers, Headers, Result}
 import play.api.mvc.Results.Ok
 import play.api.test.{FakeRequest, Helpers}
+import play.mvc._
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
@@ -14,8 +16,9 @@ class AuthActionSpec extends AsyncUnitSpec {
 
   def prepareResponse(headers: Headers = Headers()): Future[Result] = {
     val controllerComponents = Helpers.stubControllerComponents()
+    val mockBodyParsers = mock[BodyParsers.Default]
     val authAction =
-      new AuthAction(controllerComponents.parsers.default, mockAuthService)(
+      new AuthAction(mockBodyParsers, mockAuthService)(
         controllerComponents.executionContext
       )
     val request = FakeRequest().withHeaders(headers)
