@@ -17,7 +17,7 @@ case class UserRequest[A](
 
 // Our custom action implementation
 class AuthAction @Inject() (
-  bodyParser: BodyParser[AnyContent],
+  bodyParser: BodyParsers.Default,
   authService: AuthService
 )(implicit ec: ExecutionContext)
   extends ActionBuilder[UserRequest, AnyContent] {
