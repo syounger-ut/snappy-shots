@@ -15,7 +15,6 @@ coverageExcludedFiles := ".*\\/target\\/.*"
 
 val jwtScalaVersion = "9.4.4"
 libraryDependencies ++= Seq(
-  evolutions,
   guice,
   jdbc,
   "org.postgresql" % "postgresql" % "42.6.0",
@@ -27,3 +26,16 @@ libraryDependencies ++= Seq(
   "org.scalamock" %% "scalamock" % "5.2.0" % Test,
   "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.0" % Test
 )
+
+enablePlugins(FlywayPlugin)
+
+flywayUrl := "jdbc:postgresql://localhost:5432/auth_service"
+flywayUser := "postgres"
+flywayPassword := "postgres"
+flywayLocations := Seq("filesystem:conf/db/migration/auth_service")
+flywayUrl in Test := "jdbc:postgresql://localhost:5432/auth_service_test"
+flywayUser in Test := "postgres"
+flywayPassword in Test := "postgres"
+flywayBaselineOnMigrate := true
+flywayBaselineDescription := "Lets go!"
+flywayInstalledBy := "Sam"
