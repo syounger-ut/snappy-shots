@@ -16,10 +16,12 @@ coverageExcludedFiles := ".*\\/target\\/.*"
 val jwtScalaVersion = "9.4.4"
 libraryDependencies ++= Seq(
   guice,
-  jdbc,
   "org.postgresql" % "postgresql" % "42.6.0",
   "com.github.jwt-scala" %% "jwt-core" % jwtScalaVersion,
   "com.github.jwt-scala" %% "jwt-play" % jwtScalaVersion,
+  "com.typesafe.slick" %% "slick" % "3.4.1",
+  "com.typesafe.slick" %% "slick-hikaricp" % "3.4.1",
+  "org.slf4j" % "slf4j-nop" % "2.0.9" % Test,
 
   // Test dependencies
   "org.scalatest" %% "scalatest" % "3.2.17" % Test,
