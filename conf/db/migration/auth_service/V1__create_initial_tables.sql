@@ -1,4 +1,4 @@
 CREATE TABLE users (
-    id integer PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     name varchar(40)
 );

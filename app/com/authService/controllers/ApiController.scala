@@ -5,9 +5,9 @@ package com.authService.controllers
 
 import com.authService.auth.AuthAction
 import com.authService.models.User
-import com.authService.repositories.{DataRepository, UserRepository}
+import com.authService.repositories._
 import play.api.libs.json.Json
-import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents, Request}
+import play.api.mvc._
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
@@ -42,8 +42,11 @@ class ApiController @Inject() (
       Ok(Json.toJson(dataRepository.getComments(postId)))
   }
 
-  def addUser(): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] => {
-    val user = User(id = 0, firstName = "John", lastName = "Doe", email = "jdoe@email.com")
-    userRepository.addUser(user).map(_ => Ok("User added"))
-  } }
+  def addUser(): Action[AnyContent] = Action.async {
+    request: Request[AnyContent] =>
+      {
+        val user = User(None, name = "John")
+        userRepository.addUser(user).map(user => Ok(Json.toJson(user)))
+      }
+  }
 }
