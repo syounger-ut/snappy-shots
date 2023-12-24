@@ -1,5 +1,7 @@
 GET /api/ping                   com.authService.controllers.ApiController.ping
 GET /api/post/:postId           com.authService.controllers.ApiController.getPost(postId: Int)
 GET /api/post/:postId/comments  com.authService.controllers.ApiController.getComments(postId: Int)
-GET /api/login                  com.authService.controllers.AuthenticationController.login
 GET /api/addUser                com.authService.controllers.ApiController.addUser
+
+GET /auth/login                  com.authService.controllers.AuthenticationController.login(email: String, password: String)
+POST /auth/register             com.authService.controllers.AuthenticationController.register(email: String, password: String)

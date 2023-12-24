@@ -9,8 +9,8 @@ import scala.util.{Failure, Try}
 class AuthService {
   implicit val clock: Clock = Clock.systemUTC
 
-  def createToken(): String = {
-    Jwt.encode("""{"user":1}""", "secretKey", JwtAlgorithm.HS256)
+  def createToken(userId: Long): String = {
+    Jwt.encode(s"""{"user":${userId}""", "secretKey", JwtAlgorithm.HS256)
   }
 
   def validateToken(token: String): Try[(String, String, String)] = {

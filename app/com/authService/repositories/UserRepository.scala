@@ -20,4 +20,9 @@ class UserRepository @Inject() () {
     val query = SlickTables.users.filter(_.id === id).result.headOption
     db.run(query)
   }
+
+  def findUser(email: String): Future[Option[User]] = {
+    val query = SlickTables.users.filter(_.email === email).result.headOption
+    db.run(query)
+  }
 }

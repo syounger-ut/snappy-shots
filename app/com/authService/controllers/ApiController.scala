@@ -45,7 +45,7 @@ class ApiController @Inject() (
   def addUser(): Action[AnyContent] = Action.async {
     request: Request[AnyContent] =>
       {
-        val user = User(None, name = "John")
+        val user = User(0, email = "john@email.com", password = "foobar")
         userRepository.addUser(user).map(user => Ok(Json.toJson(user)))
       }
   }
