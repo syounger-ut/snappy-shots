@@ -3,7 +3,7 @@ package com.authService.models
 import play.api.libs.json._
 import slick.jdbc.PostgresProfile
 
-case class User(id: Option[Long], name: String)
+case class User(id: Long, email: String, password: String)
 object User {
   implicit val format: Format[User] = Json.format[User]
 }
@@ -13,9 +13,10 @@ class UsersTable(val profile: PostgresProfile) {
 
   class UsersTableDef(tag: Tag) extends Table[User](tag, "users") {
     def id = column[Long]("user_id", O.PrimaryKey, O.AutoInc)
-    private def name = column[String]("name")
+    def email = column[String]("email")
+    private def password = column[String]("password")
 
-    def * = (id.?, name) <> ((User.apply _).tupled, User.unapply)
+    def * = (id, email, password) <> ((User.apply _).tupled, User.unapply)
   }
 
   val users = TableQuery[UsersTableDef]

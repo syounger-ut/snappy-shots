@@ -1,4 +1,5 @@
 CREATE TABLE users (
     id BIGSERIAL PRIMARY KEY,
-    name varchar(40)
+    email varchar(40),
+    password varchar(40)
 );

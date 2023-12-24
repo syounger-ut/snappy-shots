@@ -31,13 +31,13 @@ libraryDependencies ++= Seq(
 
 enablePlugins(FlywayPlugin)
 
-flywayUrl := "jdbc:postgresql://localhost:5432/auth_service"
-flywayUser := "postgres"
-flywayPassword := "postgres"
-flywayLocations := Seq("filesystem:conf/db/migration/auth_service")
-flywayUrl in Test := "jdbc:postgresql://localhost:5432/auth_service_test"
-flywayUser in Test := "postgres"
-flywayPassword in Test := "postgres"
+flywayUrl := s"jdbc:postgresql://localhost:5432/snappy_shots"
+flywayUser := sys.env.getOrElse("SNAPPY_SHOTS_DB_USER", "postgres")
+flywayPassword := sys.env.getOrElse("SNAPPY_SHOTS_DB_PASSWORD", "postgres")
+flywayLocations := Seq("filesystem:conf/db/migration/snappy_shots")
+flywayUrl in Test := "jdbc:postgresql://localhost:5432/snappy_shots_test"
+flywayUser in Test := sys.env.getOrElse("SNAPPY_SHOTS_DB_USER", "postgres")
+flywayPassword in Test := sys.env.getOrElse("SNAPPY_SHOTS_DB_PASSWORD", "postgres")
 flywayBaselineOnMigrate := true
 flywayBaselineDescription := "Lets go!"
 flywayInstalledBy := "Sam"
