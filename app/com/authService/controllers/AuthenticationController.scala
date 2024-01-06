@@ -17,21 +17,27 @@ class AuthenticationController @Inject() (
   authService: AuthService,
   userRepository: UserRepository
 )(implicit ec: ExecutionContext) extends AbstractController(cc) {
-  def login(email: String, password: String): Action[AnyContent] = Action.async {
+  def login: Action[AnyContent] = Action.async { request =>
+    val payload = request.body.asJson.get
+    val email = (payload \ "email").as[String]
+    val password = (payload \ "password").as[String]
+
     userRepository
       .findUser(email)
       .map {
         user => {
           if (user.isEmpty) {
             NotFound(Json.obj("message" -> "User not found"))
-          } else if (user.get.password != password) {
-            Unauthorized(Json.obj("message" -> "Invalid credentials"))
           } else {
-            Ok(Json.obj(
-              "token" -> authService.createToken(user.get.id),
-              "user" -> Json.toJson(Map("id" -> user.get.id.toString, "email" -> user.get.email)),
-              "message" -> "User created successfully"
-            ))
+            password.isBcryptedSafeBounded(user.get.password) match {
+              case Success(_) =>
+                Ok(Json.obj(
+                    "token" -> authService.createToken(user.get.id),
+                    "user" -> Json.toJson(Map("id" -> user.get.id.toString, "email" -> user.get.email)),
+                    "message" -> "Valid credentials"
+                ))
+              case Failure(e) => Unauthorized(Json.obj("message" -> "Invalid credentials"))
+            }
           }
         }
       }

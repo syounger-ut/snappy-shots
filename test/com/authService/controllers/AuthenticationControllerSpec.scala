@@ -8,6 +8,7 @@ import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.test._
 import play.api.test.Helpers._
+import com.github.t3hnar.bcrypt._
 
 import scala.concurrent.Future
 
@@ -37,13 +38,14 @@ class AuthenticationControllerSpec extends UnitSpec {
         mockAuthService,
         mockUserRepository
       )
-      controller.login(mockEmail, mockPassword).apply(FakeRequest())
+      val request = FakeRequest.apply().withJsonBody(Json.parse(s"""{"email":"${mockEmail}", "password":"${mockPassword}"}"""))
+      controller.login().apply(request)
     }
 
     describe("when a user is found") {
       def setupMocks(): Unit = {
         setAuthServiceValues(mockUserId)
-        setFindUserValue(Some(User(mockUserId, mockEmail, mockPassword)))
+        setFindUserValue(Some(User(mockUserId, mockEmail, mockPassword.bcryptSafeBounded.get)))
       }
 
       it("should return an authentication token") {
@@ -53,7 +55,7 @@ class AuthenticationControllerSpec extends UnitSpec {
         assert(status(response) == 200)
         val bodyText: String = contentAsString(response)
         assert(bodyText ==
-          """{"token":"fake-token","user":{"id":"123","email":"foo@bar.com"},"message":"User created successfully"}"""
+          """{"token":"fake-token","user":{"id":"123","email":"foo@bar.com"},"message":"Valid credentials"}"""
         )
       }
     }
