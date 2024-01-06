@@ -79,7 +79,7 @@ class AuthenticationControllerSpec extends UnitSpec {
 
     describe("when a user is found but the password is incorrect") {
       def setupMocks(): Unit = {
-        setFindUserValue(Some(User(mockUserId, mockEmail, "wrong-password")))
+        setFindUserValue(Some(User(mockUserId, mockEmail, "wrong-password".bcryptSafeBounded.get)))
       }
 
       it("should return a 401") {
@@ -112,16 +112,31 @@ class AuthenticationControllerSpec extends UnitSpec {
       controller.register().apply(request)
     }
 
-    it("should return 200") {
-      setAddUserValue(User(mockUserId, mockEmail, mockPassword))
-      setAuthServiceValues(mockUserId)
-      val response = makeRequest()
+    describe("when the user creation is successful") {
+      it("should return 200") {
+        setAddUserValue(User(mockUserId, mockEmail, mockPassword))
+        setAuthServiceValues(mockUserId)
+        val response = makeRequest()
 
-      assert(status(response) == 200)
-      val bodyText: String = contentAsString(response)
-      assert(bodyText ==
-        """{"token":"fake-token","user":{"id":"123","email":"foo@bar.com"},"message":"User created successfully"}"""
-      )
+        assert(status(response) == 200)
+        val bodyText: String = contentAsString(response)
+        assert(bodyText ==
+          """{"token":"fake-token","user":{"id":"123","email":"foo@bar.com"},"message":"User created successfully"}"""
+        )
+      }
+    }
+
+    describe("when something went wrong with user creation") {
+      it("should return 400") {
+        (mockUserRepository.addUser _)
+          .expects(*)
+          .returning(Future.failed(new Exception("Something went wrong")))
+        val response = makeRequest()
+
+        assert(status(response) == 400)
+        val bodyText: String = contentAsString(response)
+        assert(bodyText == """{"message":"Something went wrong"}""")
+      }
     }
   }
 }
