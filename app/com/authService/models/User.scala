@@ -12,7 +12,7 @@ class UsersTable(val profile: PostgresProfile) {
   import profile.api._
 
   class UsersTableDef(tag: Tag) extends Table[User](tag, "users") {
-    def id = column[Long]("user_id", O.PrimaryKey, O.AutoInc)
+    def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def email = column[String]("email")
     private def password = column[String]("password")
 
