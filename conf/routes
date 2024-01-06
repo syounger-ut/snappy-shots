@@ -4,4 +4,4 @@ GET /api/post/:postId/comments  com.authService.controllers.ApiController.getCom
 GET /api/addUser                com.authService.controllers.ApiController.addUser
 
 GET /auth/login                  com.authService.controllers.AuthenticationController.login(email: String, password: String)
-POST /auth/register             com.authService.controllers.AuthenticationController.register(email: String, password: String)
+POST /auth/register             com.authService.controllers.AuthenticationController.register

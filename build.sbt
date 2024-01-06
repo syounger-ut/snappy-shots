@@ -21,6 +21,7 @@ libraryDependencies ++= Seq(
   "com.github.jwt-scala" %% "jwt-play" % jwtScalaVersion,
   "com.typesafe.slick" %% "slick" % "3.4.1",
   "com.typesafe.slick" %% "slick-hikaricp" % "3.4.1",
+  "com.github.t3hnar" %% "scala-bcrypt" % "4.3.0",
   "org.slf4j" % "slf4j-nop" % "2.0.9" % Test,
 
   // Test dependencies

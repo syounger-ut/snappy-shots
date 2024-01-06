@@ -4,6 +4,7 @@ import com.authService.UnitSpec
 import com.authService.auth.AuthService
 import com.authService.models.User
 import com.authService.repositories.UserRepository
+import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.test._
 import play.api.test.Helpers._
@@ -19,8 +20,8 @@ class AuthenticationControllerSpec extends UnitSpec {
   val mockEmail = "foo@bar.com"
   val mockPassword = "password"
 
-  def setAuthServiceValues(): Unit = {
-    (mockAuthService.createToken _).expects(mockUserId).returning("fake-token")
+  def setAuthServiceValues(userId: Long): Unit = {
+    (mockAuthService.createToken _).expects(userId).returning("fake-token")
   }
 
   describe("#login") {
@@ -41,7 +42,7 @@ class AuthenticationControllerSpec extends UnitSpec {
 
     describe("when a user is found") {
       def setupMocks(): Unit = {
-        setAuthServiceValues()
+        setAuthServiceValues(mockUserId)
         setFindUserValue(Some(User(mockUserId, mockEmail, mockPassword)))
       }
 
@@ -95,7 +96,7 @@ class AuthenticationControllerSpec extends UnitSpec {
   describe("#register") {
     def setAddUserValue(user: User): Unit = {
       (mockUserRepository.addUser _)
-        .expects(User(0, mockEmail, mockPassword))
+        .expects(*)
         .returning(Future(user))
     }
 
@@ -105,12 +106,13 @@ class AuthenticationControllerSpec extends UnitSpec {
         mockAuthService,
         mockUserRepository
       )
-      controller.register(mockEmail, mockPassword).apply(FakeRequest())
+      val request = FakeRequest().withJsonBody(Json.parse(s"""{"email":"${mockEmail}", "password":"${mockPassword}"}"""))
+      controller.register().apply(request)
     }
 
     it("should return 200") {
       setAddUserValue(User(mockUserId, mockEmail, mockPassword))
-      setAuthServiceValues()
+      setAuthServiceValues(mockUserId)
       val response = makeRequest()
 
       assert(status(response) == 200)
