@@ -32,13 +32,13 @@ libraryDependencies ++= Seq(
 
 enablePlugins(FlywayPlugin)
 
-flywayUrl := s"jdbc:postgresql://localhost:5432/${sys.env("SNAPPY_SHOTS_DB_NAME")}"
-flywayUser := sys.env("SNAPPY_SHOTS_DB_USER")
-flywayPassword := sys.env("SNAPPY_SHOTS_DB_PASSWORD")
-flywayLocations := Seq(s"filesystem:conf/db/migration/${sys.env("SNAPPY_SHOTS_DB_NAME")}")
-Test / flywayUrl := s"jdbc:postgresql://localhost:5432/${sys.env("SNAPPY_SHOTS_DB_NAME")}_test"
-Test / flywayUser := sys.env("SNAPPY_SHOTS_DB_USER")
-Test / flywayPassword := sys.env("SNAPPY_SHOTS_DB_PASSWORD")
+flywayUrl := s"jdbc:postgresql://localhost:5432/${sys.env.getOrElse("SNAPPY_SHOTS_DB_NAME", "db_name")}"
+flywayUser := sys.env.getOrElse("SNAPPY_SHOTS_DB_USER", "db_user")
+flywayPassword := sys.env.getOrElse("SNAPPY_SHOTS_DB_PASSWORD", "db_password")
+flywayLocations := Seq(s"filesystem:conf/db/migration/${sys.env.getOrElse("SNAPPY_SHOTS_DB_NAME", "db_name")}")
+Test / flywayUrl := s"jdbc:postgresql://localhost:5432/${sys.env.getOrElse("SNAPPY_SHOTS_DB_NAME", "db_name")}_test"
+Test / flywayUser := sys.env.getOrElse("SNAPPY_SHOTS_DB_USER", "db_user")
+Test / flywayPassword := sys.env.getOrElse("SNAPPY_SHOTS_DB_PASSWORD", "db_password")
 flywayBaselineOnMigrate := true
 flywayBaselineDescription := "Lets go!"
 flywayInstalledBy := "Sam"
