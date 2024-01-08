@@ -17,7 +17,8 @@ class UserRepository @Inject() {
   def addUser(user: User): Future[User] = {
     val query = SlickTables.users.returning(SlickTables.users) += user
     db.run(query.asTry).map {
-      case Failure(exception: PSQLException) => throw new IllegalStateException(exception.getMessage)
+      case Failure(exception: PSQLException) =>
+        throw new IllegalStateException(exception.getMessage)
       case Success(user: User) => user
     }
   }
