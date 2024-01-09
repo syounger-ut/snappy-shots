@@ -93,6 +93,23 @@ class AuthenticationControllerSpec extends UnitSpec {
         )
       }
     }
+
+    describe("when the password is not a valid bcrypt hash") {
+      def setupMocks(): Unit = {
+        setFindUserValue(Some(User(mockUserId, mockEmail, "not-a-bcrypt-hash")))
+      }
+
+      it("should return a 401") {
+        setupMocks()
+        val response = makeRequest()
+
+        assert(status(response) == 401)
+        val bodyText: String = contentAsString(response)
+        assert(bodyText ==
+          """{"message":"Invalid salt version"}"""
+        )
+      }
+    }
   }
 
   describe("#register") {
