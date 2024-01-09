@@ -45,7 +45,7 @@ class AuthenticationController @Inject() (
         case None => NotFound(Json.obj("message" -> "User not found"))
       }
       .recover { case e =>
-        BadRequest(e.getMessage)
+        BadRequest(Json.obj("message" -> e.getMessage))
       }
   }
 

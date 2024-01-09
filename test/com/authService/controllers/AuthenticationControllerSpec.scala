@@ -110,6 +110,23 @@ class AuthenticationControllerSpec extends UnitSpec {
         )
       }
     }
+
+    describe("when the user repository returns an error") {
+      def setupMocks(): Unit = {
+        (mockUserRepository.findUser _)
+          .expects(mockEmail)
+          .returning(Future.failed(new Exception("Something went wrong")))
+      }
+
+      it("should return a 400") {
+        setupMocks()
+        val response = makeRequest()
+
+        assert(status(response) == 400)
+        val bodyText: String = contentAsString(response)
+        assert(bodyText == """{"message":"Something went wrong"}""")
+      }
+    }
   }
 
   describe("#register") {
