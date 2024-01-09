@@ -42,11 +42,10 @@ class ApiController @Inject() (
       Ok(Json.toJson(dataRepository.getComments(postId)))
   }
 
-  def addUser(): Action[AnyContent] = Action.async {
-    request: Request[AnyContent] =>
-      {
-        val user = User(0, email = "john@email.com", password = "foobar")
-        userRepository.addUser(user).map(user => Ok(Json.toJson(user)))
-      }
+  def addUser(): Action[AnyContent] = authAction.async {
+    implicit request: Request[AnyContent] => {
+      val user = User(0, email = "john@email.com", password = "foobar")
+      userRepository.addUser(user).map(user => Ok(Json.toJson(user)))
+    }
   }
 }
