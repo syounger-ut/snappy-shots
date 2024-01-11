@@ -27,7 +27,7 @@ libraryDependencies ++= Seq(
   // Test dependencies
   "org.scalatest" %% "scalatest" % "3.2.17" % Test,
   "org.scalamock" %% "scalamock" % "5.2.0" % Test,
-  "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.0" % Test
+  "com.h2database" % "h2" % "1.4.200" % Test
 )
 
 enablePlugins(FlywayPlugin)
@@ -38,11 +38,11 @@ flywayPassword := sys.env.getOrElse("SNAPPY_SHOTS_DB_PASSWORD", "db_password")
 flywayLocations := Seq(
   s"filesystem:conf/db/migration/${sys.env.getOrElse("SNAPPY_SHOTS_DB_NAME", "db_name")}"
 )
-Test / flywayUrl := s"jdbc:postgresql://localhost:5432/${sys.env.getOrElse("SNAPPY_SHOTS_DB_NAME", "db_name")}_test"
-Test / flywayUser := sys.env.getOrElse("SNAPPY_SHOTS_DB_USER", "db_user")
-Test / flywayPassword := sys.env.getOrElse(
-  "SNAPPY_SHOTS_DB_PASSWORD",
-  "db_password"
+Test / flywayUrl := s"jdbc:h2:./test/db/${sys.env.getOrElse("SNAPPY_SHOTS_DB_NAME", "db_name")}_test;MODE=PostgreSQL;DATABASE_TO_UPPER=false"
+Test / flywayUser := "test_user"
+Test / flywayPassword := "test_password"
+Test / flywayLocations := Seq(
+  s"filesystem:conf/db/migration/${sys.env.getOrElse("SNAPPY_SHOTS_DB_NAME", "db_name")}"
 )
 flywayBaselineOnMigrate := true
 flywayBaselineDescription := "Lets go!"
