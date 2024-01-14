@@ -11,10 +11,10 @@ class UserRepositorySpec extends AsyncUnitSpec with ScalaFutures {
   describe("#addUser") {
     describe("on success") {
       it("should add a user") {
-        val subject = repository.addUser(User(0, "foo@bar.com", "password"))
+        val subject = repository.addUser(User(0, "test_one@test.com", "password"))
         subject.map { user =>
           assert(user.id == 1)
-          assert(user.email == "foo@bar.com")
+          assert(user.email == "test_one@test.com")
         }.recover {
           case e: Exception =>
             println("FAILED TO ADD USER:\n" + e.getMessage)
@@ -35,10 +35,24 @@ class UserRepositorySpec extends AsyncUnitSpec with ScalaFutures {
   }
 
   describe("#getUser") {
-
+    it("should return the user") {
+      for {
+        _ <- repository.addUser(User(0, "test_two@test.com", "password"))
+        result <- repository.getUser(3)
+      } yield result match {
+        case Some(user) => assert(user.email == "test_two@test.com")
+      }
+    }
   }
 
   describe("#findUser") {
-
+    it("should return the user") {
+      for {
+        _ <- repository.addUser(User(0, "test_three@test.com", "password"))
+        result <- repository.findUser("test_three@test.com")
+      } yield result match {
+        case Some(user) => assert(user.email == "test_three@test.com")
+      }
+    }
   }
 }
