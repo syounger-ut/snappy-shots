@@ -38,12 +38,18 @@ flywayPassword := sys.env.getOrElse("SNAPPY_SHOTS_DB_PASSWORD", "db_password")
 flywayLocations := Seq(
   s"filesystem:conf/db/migration/${sys.env.getOrElse("SNAPPY_SHOTS_DB_NAME", "db_name")}"
 )
+flywayBaselineOnMigrate := true
+flywayBaselineDescription := "Lets go!"
+flywayInstalledBy := "Sam"
+
+envVars := Map("ENVIRONMENT" -> sys.env.getOrElse("ENVIRONMENT", "production"))
+
+// Test setup
+Test / fork := true
+Test / envVars := Map("ENVIRONMENT" -> "test")
 Test / flywayUrl := s"jdbc:h2:./test/db/${sys.env.getOrElse("SNAPPY_SHOTS_DB_NAME", "db_name")}_test;MODE=PostgreSQL;DATABASE_TO_UPPER=false"
 Test / flywayUser := "test_user"
 Test / flywayPassword := "test_password"
 Test / flywayLocations := Seq(
   s"filesystem:conf/db/migration/${sys.env.getOrElse("SNAPPY_SHOTS_DB_NAME", "db_name")}"
 )
-flywayBaselineOnMigrate := true
-flywayBaselineDescription := "Lets go!"
-flywayInstalledBy := "Sam"
