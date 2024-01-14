@@ -3,7 +3,6 @@ package com.authService.repositories
 import com.authService.models._
 import com.authService.utils.{Connection, SlickDBDriver}
 import com.google.inject.Inject
-import org.postgresql.util.PSQLException
 import slick.jdbc.JdbcProfile
 
 import scala.concurrent.Future
@@ -21,11 +20,8 @@ class UserRepository @Inject()(override val profile: JdbcProfile = SlickDBDriver
     val action = insertQuery += user
 
     db.run(action.asTry).map {
-      case Failure(exception: PSQLException) =>
-        throw new IllegalStateException(exception.getMessage)
-      case Success(user: User) => {
-        user
-      }
+      case Success(user: User) => user
+      case Failure(exception: Exception) => throw new IllegalStateException(exception.getMessage)
     }
   }
 
