@@ -116,7 +116,8 @@ class ApiControllerSpec extends UnitSpec {
 
     describe("#addUser") {
       val mockUser = User(0, email = "john@email.com", password = "foobar")
-      val mockReturnUser = User(1, email = "john@email.com", password = "foobar")
+      val mockReturnUser =
+        User(1, email = "john@email.com", password = "foobar")
 
       def setupUserRepository() = {
         (mockUserRepository.addUser _)

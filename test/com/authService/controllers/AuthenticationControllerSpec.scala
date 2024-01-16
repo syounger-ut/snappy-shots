@@ -38,14 +38,22 @@ class AuthenticationControllerSpec extends UnitSpec {
         mockAuthService,
         mockUserRepository
       )
-      val request = FakeRequest.apply().withJsonBody(Json.parse(s"""{"email":"${mockEmail}", "password":"${mockPassword}"}"""))
+      val request = FakeRequest
+        .apply()
+        .withJsonBody(
+          Json.parse(
+            s"""{"email":"${mockEmail}", "password":"${mockPassword}"}"""
+          )
+        )
       controller.login().apply(request)
     }
 
     describe("when a user is found") {
       def setupMocks(): Unit = {
         setAuthServiceValues(mockUserId)
-        setFindUserValue(Some(User(mockUserId, mockEmail, mockPassword.bcryptSafeBounded.get)))
+        setFindUserValue(
+          Some(User(mockUserId, mockEmail, mockPassword.bcryptSafeBounded.get))
+        )
       }
 
       it("should return an authentication token") {
@@ -54,8 +62,9 @@ class AuthenticationControllerSpec extends UnitSpec {
 
         assert(status(response) == 200)
         val bodyText: String = contentAsString(response)
-        assert(bodyText ==
-          """{"token":"fake-token","user":{"id":"123","email":"foo@bar.com"},"message":"Valid credentials"}"""
+        assert(
+          bodyText ==
+            """{"token":"fake-token","user":{"id":"123","email":"foo@bar.com"},"message":"Valid credentials"}"""
         )
       }
     }
@@ -71,25 +80,31 @@ class AuthenticationControllerSpec extends UnitSpec {
 
         assert(status(response) == 404)
         val bodyText: String = contentAsString(response)
-        assert(bodyText ==
-          """{"message":"User not found"}"""
+        assert(
+          bodyText ==
+            """{"message":"User not found"}"""
         )
       }
     }
 
     describe("when a user is found but the password is incorrect") {
       def setupMocks(): Unit = {
-        setFindUserValue(Some(User(mockUserId, mockEmail, "wrong-password".bcryptSafeBounded.get)))
+        setFindUserValue(
+          Some(
+            User(mockUserId, mockEmail, "wrong-password".bcryptSafeBounded.get)
+          )
+        )
       }
 
       it("should return a 401") {
-      setupMocks()
-      val response = makeRequest()
+        setupMocks()
+        val response = makeRequest()
 
-      assert(status(response) == 401)
+        assert(status(response) == 401)
         val bodyText: String = contentAsString(response)
-        assert(bodyText ==
-          """{"message":"Invalid credentials"}"""
+        assert(
+          bodyText ==
+            """{"message":"Invalid credentials"}"""
         )
       }
     }
@@ -105,8 +120,9 @@ class AuthenticationControllerSpec extends UnitSpec {
 
         assert(status(response) == 401)
         val bodyText: String = contentAsString(response)
-        assert(bodyText ==
-          """{"message":"Invalid salt version"}"""
+        assert(
+          bodyText ==
+            """{"message":"Invalid salt version"}"""
         )
       }
     }
@@ -142,7 +158,11 @@ class AuthenticationControllerSpec extends UnitSpec {
         mockAuthService,
         mockUserRepository
       )
-      val request = FakeRequest().withJsonBody(Json.parse(s"""{"email":"${mockEmail}", "password":"${mockPassword}"}"""))
+      val request = FakeRequest().withJsonBody(
+        Json.parse(
+          s"""{"email":"${mockEmail}", "password":"${mockPassword}"}"""
+        )
+      )
       controller.register().apply(request)
     }
 
@@ -154,8 +174,9 @@ class AuthenticationControllerSpec extends UnitSpec {
 
         assert(status(response) == 200)
         val bodyText: String = contentAsString(response)
-        assert(bodyText ==
-          """{"token":"fake-token","user":{"id":"123","email":"foo@bar.com"},"message":"User created successfully"}"""
+        assert(
+          bodyText ==
+            """{"token":"fake-token","user":{"id":"123","email":"foo@bar.com"},"message":"User created successfully"}"""
         )
       }
     }

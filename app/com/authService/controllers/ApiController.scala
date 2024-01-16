@@ -43,9 +43,10 @@ class ApiController @Inject() (
   }
 
   def addUser(): Action[AnyContent] = authAction.async {
-    implicit request: Request[AnyContent] => {
-      val user = User(0, email = "john@email.com", password = "foobar")
-      userRepository.addUser(user).map(user => Ok(Json.toJson(user)))
-    }
+    implicit request: Request[AnyContent] =>
+      {
+        val user = User(0, email = "john@email.com", password = "foobar")
+        userRepository.addUser(user).map(user => Ok(Json.toJson(user)))
+      }
   }
 }

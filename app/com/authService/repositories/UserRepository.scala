@@ -8,7 +8,10 @@ import slick.jdbc.JdbcProfile
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
-class UserRepository @Inject()(override val profile: JdbcProfile = SlickDBDriver.getDriver) extends UsersTable with Profile {
+class UserRepository @Inject() (
+  override val profile: JdbcProfile = SlickDBDriver.getDriver
+) extends UsersTable
+  with Profile {
   import scala.concurrent.ExecutionContext.Implicits.global
 
   import profile.api._
@@ -16,12 +19,14 @@ class UserRepository @Inject()(override val profile: JdbcProfile = SlickDBDriver
   val db = new Connection(profile).db()
 
   def addUser(user: User): Future[User] = {
-    val insertQuery = users returning users.map(_.id) into ((user, id) => user.copy(id = id))
+    val insertQuery =
+      users returning users.map(_.id) into ((user, id) => user.copy(id = id))
     val action = insertQuery += user
 
     db.run(action.asTry).map {
       case Success(user: User) => user
-      case Failure(exception: Exception) => throw new IllegalStateException(exception.getMessage)
+      case Failure(exception: Exception) =>
+        throw new IllegalStateException(exception.getMessage)
     }
   }
 

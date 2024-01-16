@@ -9,9 +9,9 @@ object SlickDBDriver {
 
   def getDriver: JdbcProfile = {
     scala.util.Properties.envOrElse("ENVIRONMENT", "production") match {
-      case TEST => H2Profile
+      case TEST       => H2Profile
       case PRODUCTION => PostgresProfile
-      case _ => PostgresProfile
+      case _          => PostgresProfile
     }
   }
 }
