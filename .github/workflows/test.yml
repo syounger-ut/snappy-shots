@@ -9,6 +9,9 @@ on:
 permissions:
   contents: read
 
+env:
+  SNAPPY_SHOTS_DB_NAME: "snappy_shots"
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -20,6 +23,10 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
           cache: 'sbt'
+      - name: Setup database
+        run: |
+          sbt Test/flywayClean
+          sbt Test/flywayMigrate
       - name: Run tests
         run: sbt clean coverage test
       - name: Coverage Report
@@ -29,4 +36,4 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Formatting
-        run: sbt scalafmtSbtCheck scalafmtCheck test:scalafmtCheck
+        run: sbt scalafmtSbtCheck scalafmtCheck Test/scalafmtCheck
