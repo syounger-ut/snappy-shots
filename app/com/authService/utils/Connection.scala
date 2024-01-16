@@ -1,6 +1,5 @@
 package com.authService.utils
 
-import com.authService.models.Profile
 import com.typesafe.config.ConfigFactory
 import slick.jdbc.JdbcProfile
 

@@ -1,7 +1,7 @@
 package com.authService.repositories
 
 import com.authService.models._
-import com.authService.utils.{Connection, SlickDBDriver}
+import com.authService.utils.{Connection, Profile, SlickDBDriver}
 import com.google.inject.Inject
 import slick.jdbc.JdbcProfile
 

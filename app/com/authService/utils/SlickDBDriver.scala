@@ -2,6 +2,10 @@ package com.authService.utils
 
 import slick.jdbc.{H2Profile, JdbcProfile, PostgresProfile}
 
+trait Profile {
+  val profile: JdbcProfile
+}
+
 // $COVERAGE-OFF$
 object SlickDBDriver {
   private val TEST = "test"

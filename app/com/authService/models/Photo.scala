@@ -1,13 +1,9 @@
 package com.authService.models
 
+import com.authService.utils.Profile
 import play.api.libs.json._
-import slick.jdbc.JdbcProfile
 
 import java.time.Instant
-
-trait Profile {
-  val profile: JdbcProfile
-}
 
 case class Photo(
   id: Long,
