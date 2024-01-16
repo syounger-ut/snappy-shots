@@ -12,11 +12,11 @@ trait Profile {
 case class Photo(
   id: Long,
   title: String,
-  description: String,
-  source: String,
+  description: Option[String],
+  source: Option[String],
   creator_id: Long,
-  created_at: Instant,
-  updated_at: Instant
+  created_at: Option[Instant],
+  updated_at: Option[Instant]
 )
 
 object Photo {
@@ -29,11 +29,11 @@ trait PhotosTable { this: Profile =>
   class PhotosTableDef(tag: Tag) extends Table[Photo](tag, "photos") {
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def title = column[String]("title")
-    def description = column[String]("description")
-    def source = column[String]("source")
+    def description = column[Option[String]]("description")
+    def source = column[Option[String]]("source")
     def creator_id = column[Long]("creator_id")
-    def created_at = column[Instant]("created_at")
-    def updated_at = column[Instant]("updated_at")
+    def created_at = column[Option[Instant]]("created_at")
+    def updated_at = column[Option[Instant]]("updated_at")
 
     def * = (
       id,
