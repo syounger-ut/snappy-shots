@@ -2,12 +2,13 @@ package com.authService.controllers
 
 import com.authService.UnitSpec
 import com.authService.auth.{AuthAction, AuthService}
-import com.authService.models.{Comment, Post}
-import com.authService.repositories.DataRepository
+import com.authService.models.{Comment, Post, User}
+import com.authService.repositories.{DataRepository, UserRepository}
 import play.api.mvc._
 import play.api.test._
 import play.api.test.Helpers._
 
+import scala.concurrent.Future
 import scala.util.Success
 
 class ApiControllerSpec extends UnitSpec {
@@ -15,6 +16,7 @@ class ApiControllerSpec extends UnitSpec {
   val controllerComponents: ControllerComponents =
     Helpers.stubControllerComponents()
   val mockAuthService: AuthService = mock[AuthService]
+  val mockUserRepository: UserRepository = mock[UserRepository]
   val mockAuthAction: AuthAction =
     new AuthAction(mock[BodyParsers.Default], mockAuthService)(
       controllerComponents.executionContext
@@ -22,6 +24,7 @@ class ApiControllerSpec extends UnitSpec {
   val controller = new ApiController(
     controllerComponents,
     mockDataRepository,
+    mockUserRepository,
     mockAuthAction
   )(controllerComponents.executionContext)
 
@@ -107,6 +110,36 @@ class ApiControllerSpec extends UnitSpec {
         assert(responseStatus == OK)
         assert(
           bodyText == "[{\"id\":1,\"postId\":2,\"text\":\"A comment\",\"authorName\":\"Foo Bar\"}]"
+        )
+      }
+    }
+
+    describe("#addUser") {
+      val mockUser = User(0, email = "john@email.com", password = "foobar")
+      val mockReturnUser =
+        User(1, email = "john@email.com", password = "foobar")
+
+      def setupUserRepository() = {
+        (mockUserRepository.addUser _)
+          .expects(mockUser)
+          .returns(Future.successful(mockReturnUser))
+      }
+
+      def setupResponse() = {
+        setupAuth()
+        setupUserRepository()
+        controller
+          .addUser()
+          .apply(FakeRequest().withHeaders(authHeaders))
+      }
+
+      it("should return comments") {
+        val response = setupResponse()
+        val responseStatus = status(response)
+        val bodyText: String = contentAsString(response)
+        assert(responseStatus == OK)
+        assert(
+          bodyText == "{\"id\":1,\"email\":\"john@email.com\",\"password\":\"foobar\"}"
         )
       }
     }

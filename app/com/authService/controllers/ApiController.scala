@@ -4,14 +4,10 @@
 package com.authService.controllers
 
 import com.authService.auth.AuthAction
-import com.authService.repositories.DataRepository
+import com.authService.models.User
+import com.authService.repositories._
 import play.api.libs.json.Json
-import play.api.mvc.{
-  AbstractController,
-  Action,
-  AnyContent,
-  ControllerComponents
-}
+import play.api.mvc._
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
@@ -20,6 +16,7 @@ import scala.concurrent.ExecutionContext
 class ApiController @Inject() (
   cc: ControllerComponents,
   dataRepository: DataRepository,
+  userRepository: UserRepository,
   authAction: AuthAction
 )(implicit ec: ExecutionContext)
   extends AbstractController(cc) {
@@ -43,5 +40,13 @@ class ApiController @Inject() (
     implicit request =>
       // Simply return 200 OK with the comment data as JSON.
       Ok(Json.toJson(dataRepository.getComments(postId)))
+  }
+
+  def addUser(): Action[AnyContent] = authAction.async {
+    implicit request: Request[AnyContent] =>
+      {
+        val user = User(0, email = "john@email.com", password = "foobar")
+        userRepository.addUser(user).map(user => Ok(Json.toJson(user)))
+      }
   }
 }
