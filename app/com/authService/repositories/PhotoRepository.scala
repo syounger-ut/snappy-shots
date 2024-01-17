@@ -20,7 +20,9 @@ class PhotoRepository @Inject() (
 
   def create(photo: Photo): Future[Photo] = {
     val insertQuery =
-      photos returning photos.map(_.id) into ((photo, id) => photo.copy(id = id))
+      photos returning photos.map(_.id) into ((photo, id) =>
+        photo.copy(id = id)
+      )
     val action = insertQuery += photo
 
     db.run(action.asTry).map {
