@@ -1,11 +1,8 @@
 package com.authService.models
 
+import com.authService.utils.Profile
 import play.api.libs.json._
 import slick.jdbc.JdbcProfile
-
-trait Profile {
-  val profile: JdbcProfile
-}
 
 case class User(id: Long, email: String, password: String)
 object User {

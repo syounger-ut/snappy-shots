@@ -1,10 +1,9 @@
 package com.authService.repositories
 
-import com.authService.AsyncUnitSpec
+import com.authService.DbUnitSpec
 import com.authService.models.User
-import org.scalatest.concurrent.ScalaFutures
 
-class UserRepositorySpec extends AsyncUnitSpec with ScalaFutures {
+class UserRepositorySpec extends DbUnitSpec {
   val repository = new UserRepository
 
   describe("#addUser") {
@@ -12,14 +11,11 @@ class UserRepositorySpec extends AsyncUnitSpec with ScalaFutures {
       it("should add a user") {
         val subject =
           repository.addUser(User(0, "test_one@test.com", "password"))
+
         subject
           .map { user =>
             assert(user.id == 1)
             assert(user.email == "test_one@test.com")
-          }
-          .recover { case e: Exception =>
-            println("FAILED TO ADD USER:\n" + e.getMessage)
-            fail(e)
           }
       }
     }
@@ -38,10 +34,10 @@ class UserRepositorySpec extends AsyncUnitSpec with ScalaFutures {
   describe("#getUser") {
     it("should return the user") {
       for {
-        _ <- repository.addUser(User(0, "test_two@test.com", "password"))
-        result <- repository.getUser(3)
+        _ <- repository.addUser(User(0, "test_one@test.com", "password"))
+        result <- repository.getUser(1)
       } yield result match {
-        case Some(user) => assert(user.email == "test_two@test.com")
+        case Some(user) => assert(user.email == "test_one@test.com")
       }
     }
   }
