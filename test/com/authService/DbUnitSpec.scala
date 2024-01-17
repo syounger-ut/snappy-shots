@@ -11,10 +11,18 @@ class DbUnitSpec extends AsyncUnitSpec with ScalaFutures {
   override def beforeEach(): Unit = {
     val session = db.createSession()
     session.createStatement().execute("SET REFERENTIAL_INTEGRITY TO FALSE");
-    session.createStatement().execute("TRUNCATE TABLE \"users\" RESTART IDENTITY");
-    session.createStatement().execute("ALTER TABLE \"users\" ALTER COLUMN \"id\" RESTART WITH 1");
-    session.createStatement().execute("TRUNCATE TABLE \"photos\" RESTART IDENTITY");
-    session.createStatement().execute("ALTER TABLE \"photos\" ALTER COLUMN \"id\" RESTART WITH 1");
+    session
+      .createStatement()
+      .execute("TRUNCATE TABLE \"users\" RESTART IDENTITY");
+    session
+      .createStatement()
+      .execute("ALTER TABLE \"users\" ALTER COLUMN \"id\" RESTART WITH 1");
+    session
+      .createStatement()
+      .execute("TRUNCATE TABLE \"photos\" RESTART IDENTITY");
+    session
+      .createStatement()
+      .execute("ALTER TABLE \"photos\" ALTER COLUMN \"id\" RESTART WITH 1");
     session.createStatement().execute("SET REFERENTIAL_INTEGRITY TO TRUE");
   }
 

@@ -23,7 +23,8 @@ class PhotoRepositorySpec extends DbUnitSpec {
 
     describe("on success") {
       it("should create a photo") {
-        val createUserAction = sqlu"""INSERT INTO users (id, email, password) VALUES(1, 'foo@bar.com', 'password')"""
+        val createUserAction =
+          sqlu"""INSERT INTO users (id, email, password) VALUES(1, 'foo@bar.com', 'password')"""
         val createUserQuery = db.run(createUserAction)
 
         for {
@@ -48,7 +49,9 @@ class PhotoRepositorySpec extends DbUnitSpec {
         } yield response
 
         recoverToExceptionIf[Exception](query).map { result =>
-          result.getMessage should include("Referential integrity constraint violation")
+          result.getMessage should include(
+            "Referential integrity constraint violation"
+          )
         }
       }
     }
