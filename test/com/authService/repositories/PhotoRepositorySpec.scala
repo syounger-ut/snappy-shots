@@ -1,23 +1,14 @@
 package com.authService.repositories
 
-import com.authService.AsyncUnitSpec
+import com.authService.DbUnitSpec
 import com.authService.models.Photo
-import com.authService.utils.{Connection, SlickDBDriver}
-import org.scalatest.concurrent.ScalaFutures
 
 import java.time.Instant
-import scala.util.Failure
-import scala.util.control.Exception
 
-class PhotoRepositorySpec extends AsyncUnitSpec with ScalaFutures {
+class PhotoRepositorySpec extends DbUnitSpec {
   val repository = new PhotoRepository
 
-  val profile = SlickDBDriver.getDriver
-  val db = new Connection(profile).db()
   import profile.api._
-
-  override def beforeEach(): Unit = {
-  }
 
   describe("#create") {
     val mockPhoto = Photo(

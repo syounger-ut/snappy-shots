@@ -47,7 +47,7 @@ envVars := Map("ENVIRONMENT" -> sys.env.getOrElse("ENVIRONMENT", "production"))
 // Test setup
 Test / fork := true
 Test / envVars := Map("ENVIRONMENT" -> "test")
-Test / flywayUrl := s"jdbc:h2:./test/db/${sys.env.getOrElse("SNAPPY_SHOTS_DB_NAME", "db_name")}_test;MODE=PostgreSQL;DATABASE_TO_UPPER=false"
+Test / flywayUrl := s"jdbc:h2:./test/db/${sys.env.getOrElse("SNAPPY_SHOTS_DB_NAME", "db_name")}_test;MODE=PostgreSQL;DATABASE_TO_UPPER=false;AUTO_SERVER=true"
 Test / flywayUser := "test_user"
 Test / flywayPassword := "test_password"
 Test / flywayLocations := Seq(
