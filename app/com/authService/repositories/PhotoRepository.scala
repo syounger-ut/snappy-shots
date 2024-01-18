@@ -32,6 +32,11 @@ class PhotoRepository @Inject() (
     }
   }
 
+  def get(id: Long): Future[Option[Photo]] = {
+    val query = photos.filter(_.id === id).result.headOption
+    db.run(query)
+  }
+
   def update(photo: Photo): Future[Option[Photo]] = {
     val action = photos
       .filter(_.id === photo.id)
@@ -42,5 +47,10 @@ class PhotoRepository @Inject() (
       case Success(_) => Some(photo)
       case Failure(_) => None
     }
+  }
+
+  def delete(id: Long): Future[Int] = {
+    val action = photos.filter(_.id === id).delete
+    db.run(action)
   }
 }
