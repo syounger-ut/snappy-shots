@@ -31,4 +31,28 @@ class PhotoRepository @Inject() (
         throw new IllegalStateException(exception.getMessage)
     }
   }
+
+  def get(id: Long): Future[Option[Photo]] = {
+    val query = photos.filter(_.id === id).result.headOption
+    db.run(query)
+  }
+
+  def update(photo: Photo): Future[Option[Photo]] = {
+    val action = photos
+      .filter(_.id === photo.id)
+      .map(photo =>
+        (photo.title, photo.description, photo.source, photo.creator_id)
+      )
+      .update((photo.title, photo.description, photo.source, photo.creator_id))
+
+    db.run(action.asTry).map {
+      case Success(_) => Some(photo)
+      case Failure(_) => None
+    }
+  }
+
+  def delete(id: Long): Future[Int] = {
+    val action = photos.filter(_.id === id).delete
+    db.run(action)
+  }
 }

@@ -4,31 +4,33 @@ import com.authService.DbUnitSpec
 import com.authService.models.Photo
 
 import java.time.Instant
+import scala.concurrent.Future
 
 class PhotoRepositorySpec extends DbUnitSpec {
   val repository = new PhotoRepository
 
   import profile.api._
 
-  describe("#create") {
-    val mockPhoto = Photo(
-      id = 0,
-      title = "My wonderful photo",
-      creator_id = 1,
-      description = None,
-      source = None,
-      created_at = Some(Instant.now()),
-      updated_at = Some(Instant.now())
-    )
+  val mockPhoto: Photo = Photo(
+    id = 0,
+    title = "My wonderful photo",
+    creator_id = 1,
+    description = None,
+    source = None,
+    created_at = Some(Instant.now()),
+    updated_at = Some(Instant.now())
+  )
 
+  val createUserAction =
+    sqlu"""INSERT INTO users (id, email, password) VALUES(1, 'foo@bar.com', 'password')"""
+  val createPhotoAction =
+    sqlu"""INSERT INTO photos (id, title, creator_id) VALUES(1, 'My great photo', 1)"""
+
+  describe("#create") {
     describe("on success") {
       it("should create a photo") {
-        val createUserAction =
-          sqlu"""INSERT INTO users (id, email, password) VALUES(1, 'foo@bar.com', 'password')"""
-        val createUserQuery = db.run(createUserAction)
-
         for {
-          _ <- createUserQuery
+          _ <- db.run(createUserAction)
           photo <- repository.create(mockPhoto)
         } yield photo match {
           case photo =>
@@ -53,6 +55,83 @@ class PhotoRepositorySpec extends DbUnitSpec {
             "Referential integrity constraint violation"
           )
         }
+      }
+    }
+  }
+
+  describe("#get") {
+    it("should return a photo") {
+      for {
+        _ <- db.run(createUserAction.transactionally)
+        _ <- db.run(createPhotoAction.transactionally)
+        photo <- repository.get(1)
+      } yield photo match {
+        case Some(_) => succeed
+        case None    => fail("Photo not found")
+      }
+    }
+  }
+
+  describe("#update") {
+    def updatePhoto(photoId: Int): Future[Option[Photo]] = {
+      val createPhotoActionToUpdate =
+        sqlu"""INSERT INTO photos (id, title, creator_id) VALUES(${photoId}, 'My great photo', 1)"""
+
+      for {
+        _ <- db.run(createUserAction.transactionally)
+        _ <- db.run(createPhotoActionToUpdate.transactionally)
+        photo <- repository.update(
+          mockPhoto.copy(
+            id = 1,
+            description = Some("New description"),
+            creator_id = 1
+          )
+        )
+      } yield photo
+    }
+
+    describe("on success") {
+      val existingPhotoId = 1
+
+      it("should update a photo") {
+        for {
+          photo <- updatePhoto(existingPhotoId)
+        } yield photo match {
+          case Some(photo) =>
+            assert(photo.description.contains("New description"))
+          case None => fail("Photo not found")
+        }
+      }
+    }
+
+    describe("on failure") {
+      val nonExistingPhotoId = 2
+
+      it("should return none") {
+        for {
+          photo <- updatePhoto(nonExistingPhotoId)
+        } yield photo match {
+          case Some(photo) =>
+            assert(photo.description.contains("New description"))
+          case None => fail("Photo not found")
+        }
+      }
+    }
+  }
+
+  describe("#delete") {
+    val session = db.createSession()
+
+    it("should delete the photo") {
+      for {
+        _ <- db.run(createUserAction.transactionally)
+        _ <- db.run(createPhotoAction.transactionally)
+        _ <- repository.delete(1)
+      } yield {
+        val result = session
+          .createStatement()
+          .executeQuery("SELECT * FROM photos WHERE id = 1");
+        assert(!result.next())
       }
     }
   }
