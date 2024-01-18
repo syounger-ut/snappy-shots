@@ -67,7 +67,7 @@ class PhotoRepositorySpec extends DbUnitSpec {
         photo <- repository.get(1)
       } yield photo match {
         case Some(_) => succeed
-        case None => fail("Photo not found")
+        case None    => fail("Photo not found")
       }
     }
   }
@@ -80,7 +80,13 @@ class PhotoRepositorySpec extends DbUnitSpec {
       for {
         _ <- db.run(createUserAction.transactionally)
         _ <- db.run(createPhotoActionToUpdate.transactionally)
-        photo <- repository.update(mockPhoto.copy(id = 1, description = Some("New description"), creator_id = 1))
+        photo <- repository.update(
+          mockPhoto.copy(
+            id = 1,
+            description = Some("New description"),
+            creator_id = 1
+          )
+        )
       } yield photo
     }
 
@@ -122,7 +128,9 @@ class PhotoRepositorySpec extends DbUnitSpec {
         _ <- db.run(createPhotoAction.transactionally)
         _ <- repository.delete(1)
       } yield {
-        val result = session.createStatement().executeQuery("SELECT * FROM photos WHERE id = 1");
+        val result = session
+          .createStatement()
+          .executeQuery("SELECT * FROM photos WHERE id = 1");
         assert(!result.next())
       }
     }

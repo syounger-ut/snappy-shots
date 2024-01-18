@@ -40,7 +40,9 @@ class PhotoRepository @Inject() (
   def update(photo: Photo): Future[Option[Photo]] = {
     val action = photos
       .filter(_.id === photo.id)
-      .map(photo => (photo.title, photo.description, photo.source, photo.creator_id))
+      .map(photo =>
+        (photo.title, photo.description, photo.source, photo.creator_id)
+      )
       .update((photo.title, photo.description, photo.source, photo.creator_id))
 
     db.run(action.asTry).map {
