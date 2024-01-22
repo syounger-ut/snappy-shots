@@ -16,6 +16,14 @@ class PhotosController @Inject() (
 )(implicit ec: ExecutionContext)
   extends AbstractController(cc) {
 
+  def getPhotos: Action[AnyContent] = authAction.async {
+    implicit request =>
+      photosRepository.list() map {
+        case List() => NotFound
+        case photos => Ok(Json.toJson(photos))
+      }
+  }
+
   /*
    * Get a photo by its identifier
    * @param photoId The identifier of the photo to find

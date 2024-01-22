@@ -72,6 +72,32 @@ class PhotoRepositorySpec extends DbUnitSpec {
     }
   }
 
+  describe("#list") {
+    describe("when photos are found") {
+      it("should return a list of photos") {
+        for {
+          _ <- db.run(createUserAction.transactionally)
+          _ <- db.run(createPhotoAction.transactionally)
+          photo <- repository.list()
+        } yield photo match {
+          case List(_) => succeed
+          case List()  => fail("Photos not found")
+        }
+      }
+    }
+
+    describe("when no photos are found") {
+      it("should return an empty list") {
+        for {
+          photo <- repository.list()
+        } yield photo match {
+          case List(_) => fail("Photos found")
+          case List()  => succeed
+        }
+      }
+    }
+  }
+
   describe("#update") {
     def updatePhoto(photoId: Int): Future[Option[Photo]] = {
       val createPhotoActionToUpdate =

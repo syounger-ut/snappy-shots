@@ -36,6 +36,65 @@ class PhotosControllerSpec extends UnitSpec {
       .returns(Success("mock-header", "mock-claim", "mock-signature"))
   }
 
+  describe("#getPhotos") {
+    val mockDateTime = Instant.now()
+    val mockPhoto = Some(
+      Photo(
+        1,
+        "My wonderful photo",
+        Some("A beautiful photo scenery"),
+        Some("https://www.example.com/my-photo.jpg"),
+        1,
+        Some(mockDateTime),
+        Some(mockDateTime)
+      )
+    )
+    val mockId: Long = 123
+
+    def setupPhotoRepository(mockResponse: Option[Photo] = None) = {
+      mockResponse match {
+        case Some(res) =>
+          (mockPhotoRepository.list _)
+            .expects()
+            .returns(Future.successful(List(res)))
+        case None =>
+          (mockPhotoRepository.list _)
+            .expects()
+            .returns(Future.successful(List()))
+      }
+    }
+
+    def setupResponse(returnPhoto: Boolean) = {
+      setupAuth()
+      if (returnPhoto) {
+        setupPhotoRepository(mockPhoto)
+      } else {
+        setupPhotoRepository()
+      }
+      controller.getPhotos().apply(FakeRequest().withHeaders(authHeaders))
+    }
+
+    describe("when a photo exists") {
+      it("should return the photo") {
+        val response = setupResponse(true)
+        val responseStatus = status(response)
+        val bodyText: String = contentAsString(response)
+        assert(responseStatus == OK)
+        assert(
+          bodyText == s"[{\"id\":1,\"title\":\"My wonderful photo\",\"description\":\"A beautiful photo scenery\",\"source\":\"https://www.example.com/my-photo.jpg\",\"creator_id\":1,\"created_at\":\"${mockDateTime.toString}\",\"updated_at\":\"${mockDateTime.toString}\"}]"
+        )
+      }
+    }
+
+    describe("when photo do not exist") {
+      it("should return not found status") {
+        val response = setupResponse(false)
+        val responseStatus = status(response)
+        assert(responseStatus == NOT_FOUND)
+      }
+    }
+  }
+
   describe("#getPhoto") {
     val mockDateTime = Instant.now()
     val mockPhoto = Some(
