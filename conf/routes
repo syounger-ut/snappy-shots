@@ -3,5 +3,8 @@ GET /api/post/:postId           com.authService.controllers.ApiController.getPos
 GET /api/post/:postId/comments  com.authService.controllers.ApiController.getComments(postId: Int)
 GET /api/addUser                com.authService.controllers.ApiController.addUser()
 
+# Photo routes
+GET /api/photos/:photoId         com.authService.controllers.PhotosController.getPhoto(photoId: Int)
+
 GET /auth/login                  com.authService.controllers.AuthenticationController.login()
 POST /auth/register             com.authService.controllers.AuthenticationController.register()
