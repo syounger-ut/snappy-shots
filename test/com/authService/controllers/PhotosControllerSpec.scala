@@ -29,7 +29,8 @@ class PhotosControllerSpec extends UnitSpec {
   )(controllerComponents.executionContext)
 
   val mockJwtToken = "mock-auth-token"
-  val authHeaders: (String, String) = ("Authorization", s"Bearer ${mockJwtToken}")
+  val authHeaders: (String, String) =
+    ("Authorization", s"Bearer ${mockJwtToken}")
 
   val mockId: Int = 123
   val mockDateTime: Instant = Instant.now()
@@ -152,7 +153,10 @@ class PhotosControllerSpec extends UnitSpec {
       updated_at = None
     )
 
-    val mockPhotoUpdateResponse = mockPhotoUpdate.copy(created_at = Some(mockDateTime), updated_at = Some(mockDateTime))
+    val mockPhotoUpdateResponse = mockPhotoUpdate.copy(
+      created_at = Some(mockDateTime),
+      updated_at = Some(mockDateTime)
+    )
 
     val requestBodyGood = s"""{
       "id":1,
@@ -165,7 +169,11 @@ class PhotosControllerSpec extends UnitSpec {
       "title":"Missing required fields"
     }"""
 
-    def setupPhotoRepository(repositoryCallCount: Int, mockPhotoToUpdate: Photo, mockResponse: Option[Photo] = None) = {
+    def setupPhotoRepository(
+      repositoryCallCount: Int,
+      mockPhotoToUpdate: Photo,
+      mockResponse: Option[Photo] = None
+    ) = {
       mockResponse match {
         case Some(res) =>
           (mockPhotoRepository.update _)
@@ -180,10 +188,18 @@ class PhotosControllerSpec extends UnitSpec {
       }
     }
 
-    def setupResponse(returnPhoto: Boolean, requestBody: String, repositoryCallCount: Int) = {
+    def setupResponse(
+      returnPhoto: Boolean,
+      requestBody: String,
+      repositoryCallCount: Int
+    ) = {
       setupAuth()
       if (returnPhoto) {
-        setupPhotoRepository(repositoryCallCount, mockPhotoUpdate, Some(mockPhotoUpdateResponse))
+        setupPhotoRepository(
+          repositoryCallCount,
+          mockPhotoUpdate,
+          Some(mockPhotoUpdateResponse)
+        )
       } else {
         setupPhotoRepository(repositoryCallCount, mockPhotoUpdate)
       }
@@ -197,7 +213,11 @@ class PhotosControllerSpec extends UnitSpec {
 
     describe("when the json payload is not valid") {
       it("should return bad request status") {
-        val response = setupResponse(repositoryCallCount = 0, returnPhoto = false, requestBody = requestBodyBad)
+        val response = setupResponse(
+          repositoryCallCount = 0,
+          returnPhoto = false,
+          requestBody = requestBodyBad
+        )
         val responseStatus = status(response)
         assert(responseStatus == BAD_REQUEST)
       }
@@ -206,7 +226,11 @@ class PhotosControllerSpec extends UnitSpec {
     describe("when the json payload is valid") {
       describe("when the photo exists") {
         it("should return the photo") {
-          val response = setupResponse(repositoryCallCount = 1, returnPhoto = true, requestBody = requestBodyGood)
+          val response = setupResponse(
+            repositoryCallCount = 1,
+            returnPhoto = true,
+            requestBody = requestBodyGood
+          )
           val responseStatus = status(response)
           val bodyText: String = contentAsString(response)
           assert(responseStatus == OK)
@@ -218,7 +242,11 @@ class PhotosControllerSpec extends UnitSpec {
 
       describe("when the photo doesn't exist") {
         it("should return bad request status") {
-          val response = setupResponse(repositoryCallCount = 1, returnPhoto = false, requestBody = requestBodyGood)
+          val response = setupResponse(
+            repositoryCallCount = 1,
+            returnPhoto = false,
+            requestBody = requestBodyGood
+          )
           val responseStatus = status(response)
           assert(responseStatus == NOT_FOUND)
         }
@@ -237,7 +265,9 @@ class PhotosControllerSpec extends UnitSpec {
       setupAuth()
       setupPhotoRepository(repositoryResponse)
 
-      controller.deletePhoto(mockId).apply(FakeRequest().withHeaders(authHeaders))
+      controller
+        .deletePhoto(mockId)
+        .apply(FakeRequest().withHeaders(authHeaders))
     }
 
     describe("when the photo exists") {

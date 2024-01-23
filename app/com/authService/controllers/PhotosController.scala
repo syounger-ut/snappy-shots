@@ -17,12 +17,11 @@ class PhotosController @Inject() (
 )(implicit ec: ExecutionContext)
   extends AbstractController(cc) {
 
-  def getPhotos: Action[AnyContent] = authAction.async {
-    implicit request =>
-      photosRepository.list() map {
-        case List() => NotFound
-        case photos => Ok(Json.toJson(photos))
-      }
+  def getPhotos: Action[AnyContent] = authAction.async { implicit request =>
+    photosRepository.list() map {
+      case List() => NotFound
+      case photos => Ok(Json.toJson(photos))
+    }
   }
 
   /*
@@ -46,15 +45,17 @@ class PhotosController @Inject() (
   def updatePhoto(photoId: Int): Action[AnyContent] = authAction.async {
     implicit request =>
       request.body.asJson match {
-        case Some(jsValue) => Json.fromJson[Photo](jsValue) match {
-          case JsSuccess(photo, _)  => photosRepository
-            .update(photoId, photo)
-            .map {
-              case Some(updatedPhoto) => Ok(Json.toJson(updatedPhoto))
-              case None               => NotFound
-            }
-          case _                    => Future(BadRequest)
-        }
+        case Some(jsValue) =>
+          Json.fromJson[Photo](jsValue) match {
+            case JsSuccess(photo, _) =>
+              photosRepository
+                .update(photoId, photo)
+                .map {
+                  case Some(updatedPhoto) => Ok(Json.toJson(updatedPhoto))
+                  case None               => NotFound
+                }
+            case _ => Future(BadRequest)
+          }
         case None => Future(BadRequest)
       }
   }
