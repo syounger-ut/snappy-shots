@@ -31,6 +31,7 @@ class PhotosControllerSpec extends UnitSpec {
   val mockJwtToken = "mock-auth-token"
   val authHeaders: (String, String) = ("Authorization", s"Bearer ${mockJwtToken}")
 
+  val mockId: Int = 123
   val mockDateTime: Instant = Instant.now()
   val mockPhoto: Option[Photo] = Some(
     Photo(
@@ -96,8 +97,6 @@ class PhotosControllerSpec extends UnitSpec {
   }
 
   describe("#getPhoto") {
-    val mockId: Long = 123
-
     def setupPhotoRepository(mockResponse: Option[Photo] = None) = {
       mockResponse match {
         case Some(res) =>
@@ -143,7 +142,6 @@ class PhotosControllerSpec extends UnitSpec {
   }
 
   describe("#updatePhoto") {
-    val mockId: Int = 123
     val mockPhotoUpdate = Photo(
       id = 1,
       title = "Updated title",
@@ -224,6 +222,37 @@ class PhotosControllerSpec extends UnitSpec {
           val responseStatus = status(response)
           assert(responseStatus == NOT_FOUND)
         }
+      }
+    }
+  }
+
+  describe("#deletePhoto") {
+    def setupPhotoRepository(mockResponse: Int) = {
+      (mockPhotoRepository.delete _)
+        .expects(mockId)
+        .returns(Future.successful(mockResponse))
+    }
+
+    def setupResponse(repositoryResponse: Int) = {
+      setupAuth()
+      setupPhotoRepository(repositoryResponse)
+
+      controller.deletePhoto(mockId).apply(FakeRequest().withHeaders(authHeaders))
+    }
+
+    describe("when the photo exists") {
+      it("should return ok status") {
+        val response = setupResponse(repositoryResponse = 1)
+        val responseStatus = status(response)
+        assert(responseStatus == OK)
+      }
+    }
+
+    describe("when the photo doesn't exist") {
+      it("should return not found status") {
+        val response = setupResponse(repositoryResponse = 0)
+        val responseStatus = status(response)
+        assert(responseStatus == NOT_FOUND)
       }
     }
   }

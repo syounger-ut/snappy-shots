@@ -58,4 +58,17 @@ class PhotosController @Inject() (
         case None => Future(BadRequest)
       }
   }
+
+  /*
+   * Delete a photo
+   * @param photoId The identifier of the photo to delete
+   * @return The created photo
+   */
+  def deletePhoto(photoId: Int): Action[AnyContent] = authAction.async {
+    implicit request =>
+      photosRepository.delete(photoId) map {
+        case 1 => Ok
+        case _ => NotFound
+      }
+  }
 }
