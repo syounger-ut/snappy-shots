@@ -3,7 +3,8 @@ package com.authService.controllers
 import com.authService.UnitSpec
 import com.authService.auth.{AuthAction, AuthService}
 import com.authService.models.Photo
-import com.authService.repositories.{PhotoRepository, UserRepository}
+import com.authService.repositories.PhotoRepository
+import play.api.libs.json.Json
 import play.api.mvc._
 import play.api.test._
 import play.api.test.Helpers._
@@ -28,7 +29,20 @@ class PhotosControllerSpec extends UnitSpec {
   )(controllerComponents.executionContext)
 
   val mockJwtToken = "mock-auth-token"
-  val authHeaders = ("Authorization", s"Bearer ${mockJwtToken}")
+  val authHeaders: (String, String) = ("Authorization", s"Bearer ${mockJwtToken}")
+
+  val mockDateTime: Instant = Instant.now()
+  val mockPhoto: Option[Photo] = Some(
+    Photo(
+      1,
+      "My wonderful photo",
+      Some("A beautiful photo scenery"),
+      Some("https://www.example.com/my-photo.jpg"),
+      1,
+      Some(mockDateTime),
+      Some(mockDateTime)
+    )
+  )
 
   def setupAuth(): Unit = {
     (mockAuthService.validateToken _)
@@ -37,20 +51,6 @@ class PhotosControllerSpec extends UnitSpec {
   }
 
   describe("#getPhotos") {
-    val mockDateTime = Instant.now()
-    val mockPhoto = Some(
-      Photo(
-        1,
-        "My wonderful photo",
-        Some("A beautiful photo scenery"),
-        Some("https://www.example.com/my-photo.jpg"),
-        1,
-        Some(mockDateTime),
-        Some(mockDateTime)
-      )
-    )
-    val mockId: Long = 123
-
     def setupPhotoRepository(mockResponse: Option[Photo] = None) = {
       mockResponse match {
         case Some(res) =>
@@ -96,18 +96,6 @@ class PhotosControllerSpec extends UnitSpec {
   }
 
   describe("#getPhoto") {
-    val mockDateTime = Instant.now()
-    val mockPhoto = Some(
-      Photo(
-        1,
-        "My wonderful photo",
-        Some("A beautiful photo scenery"),
-        Some("https://www.example.com/my-photo.jpg"),
-        1,
-        Some(mockDateTime),
-        Some(mockDateTime)
-      )
-    )
     val mockId: Long = 123
 
     def setupPhotoRepository(mockResponse: Option[Photo] = None) = {
@@ -150,6 +138,92 @@ class PhotosControllerSpec extends UnitSpec {
         val response = setupResponse(false)
         val responseStatus = status(response)
         assert(responseStatus == NOT_FOUND)
+      }
+    }
+  }
+
+  describe("#updatePhoto") {
+    val mockId: Int = 123
+    val mockPhotoUpdate = Photo(
+      id = 1,
+      title = "Updated title",
+      description = Some("A beautiful photo scenery"),
+      source = Some("https://www.example.com/my-photo.jpg"),
+      creator_id = 1,
+      created_at = None,
+      updated_at = None
+    )
+
+    val mockPhotoUpdateResponse = mockPhotoUpdate.copy(created_at = Some(mockDateTime), updated_at = Some(mockDateTime))
+
+    val requestBodyGood = s"""{
+      "id":1,
+      "title":"Updated title",
+      "description":"A beautiful photo scenery",
+      "source":"https://www.example.com/my-photo.jpg",
+      "creator_id":1
+    }"""
+    val requestBodyBad = s"""{
+      "title":"Missing required fields"
+    }"""
+
+    def setupPhotoRepository(repositoryCallCount: Int, mockPhotoToUpdate: Photo, mockResponse: Option[Photo] = None) = {
+      mockResponse match {
+        case Some(res) =>
+          (mockPhotoRepository.update _)
+            .expects(mockId, mockPhotoToUpdate)
+            .returns(Future.successful(Some(res)))
+            .repeated(repositoryCallCount)
+        case None =>
+          (mockPhotoRepository.update _)
+            .expects(mockId, mockPhotoToUpdate)
+            .returns(Future.successful(None))
+            .repeated(repositoryCallCount)
+      }
+    }
+
+    def setupResponse(returnPhoto: Boolean, requestBody: String, repositoryCallCount: Int) = {
+      setupAuth()
+      if (returnPhoto) {
+        setupPhotoRepository(repositoryCallCount, mockPhotoUpdate, Some(mockPhotoUpdateResponse))
+      } else {
+        setupPhotoRepository(repositoryCallCount, mockPhotoUpdate)
+      }
+
+      val fakeRequest = FakeRequest()
+        .withHeaders(authHeaders)
+        .withJsonBody(Json.parse(requestBody))
+
+      controller.updatePhoto(mockId).apply(fakeRequest)
+    }
+
+    describe("when the json payload is not valid") {
+      it("should return bad request status") {
+        val response = setupResponse(repositoryCallCount = 0, returnPhoto = false, requestBody = requestBodyBad)
+        val responseStatus = status(response)
+        assert(responseStatus == BAD_REQUEST)
+      }
+    }
+
+    describe("when the json payload is valid") {
+      describe("when the photo exists") {
+        it("should return the photo") {
+          val response = setupResponse(repositoryCallCount = 1, returnPhoto = true, requestBody = requestBodyGood)
+          val responseStatus = status(response)
+          val bodyText: String = contentAsString(response)
+          assert(responseStatus == OK)
+          assert(
+            bodyText == s"{\"id\":1,\"title\":\"Updated title\",\"description\":\"A beautiful photo scenery\",\"source\":\"https://www.example.com/my-photo.jpg\",\"creator_id\":1,\"created_at\":\"${mockDateTime.toString}\",\"updated_at\":\"${mockDateTime.toString}\"}"
+          )
+        }
+      }
+
+      describe("when the photo doesn't exist") {
+        it("should return bad request status") {
+          val response = setupResponse(repositoryCallCount = 1, returnPhoto = false, requestBody = requestBodyGood)
+          val responseStatus = status(response)
+          assert(responseStatus == NOT_FOUND)
+        }
       }
     }
   }

@@ -45,9 +45,9 @@ class PhotoRepository @Inject() (
     db.run(query)
   }
 
-  def update(photo: Photo): Future[Option[Photo]] = {
+  def update(photoId: Long, photo: Photo): Future[Option[Photo]] = {
     val action = photos
-      .filter(_.id === photo.id)
+      .filter(_.id === photoId)
       .map(photo =>
         (photo.title, photo.description, photo.source, photo.creator_id)
       )

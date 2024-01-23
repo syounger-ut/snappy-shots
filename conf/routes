@@ -6,6 +6,7 @@ GET /api/addUser                com.authService.controllers.ApiController.addUse
 # Photo routes
 GET /api/photos                  com.authService.controllers.PhotosController.getPhotos()
 GET /api/photos/:photoId         com.authService.controllers.PhotosController.getPhoto(photoId: Int)
+PUT /api/photos/:photoId         com.authService.controllers.PhotosController.updatePhoto(photoId: Int)
 
 GET /auth/login                  com.authService.controllers.AuthenticationController.login()
 POST /auth/register             com.authService.controllers.AuthenticationController.register()

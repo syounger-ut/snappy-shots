@@ -107,6 +107,7 @@ class PhotoRepositorySpec extends DbUnitSpec {
         _ <- db.run(createUserAction.transactionally)
         _ <- db.run(createPhotoActionToUpdate.transactionally)
         photo <- repository.update(
+          mockPhoto.id,
           mockPhoto.copy(
             id = 1,
             description = Some("New description"),
