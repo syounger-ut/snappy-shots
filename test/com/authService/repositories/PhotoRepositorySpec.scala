@@ -11,10 +11,12 @@ class PhotoRepositorySpec extends DbUnitSpec {
 
   import profile.api._
 
+  val mockUserId = 1
+  val mockUserIdTwo = 2
   val mockPhoto: Photo = Photo(
     id = 0,
     title = "My wonderful photo",
-    creator_id = 1,
+    creator_id = mockUserId,
     description = None,
     source = None,
     created_at = Some(Instant.now()),
@@ -23,8 +25,12 @@ class PhotoRepositorySpec extends DbUnitSpec {
 
   val createUserAction =
     sqlu"""INSERT INTO users (id, email, password) VALUES(1, 'foo@bar.com', 'password')"""
+  val createSecondUserAction =
+    sqlu"""INSERT INTO users (id, email, password) VALUES(2, 'bar@foo.com', 'password')"""
   val createPhotoAction =
-    sqlu"""INSERT INTO photos (id, title, creator_id) VALUES(1, 'My great photo', 1)"""
+    sqlu"""INSERT INTO photos (id, title, creator_id) VALUES(1, 'My great photo', ${mockUserId})"""
+  val createSecondPhotoAction =
+    sqlu"""INSERT INTO photos (id, title, creator_id) VALUES(2, 'My great photo', ${mockUserIdTwo})"""
 
   describe("#create") {
     describe("on success") {
@@ -42,7 +48,7 @@ class PhotoRepositorySpec extends DbUnitSpec {
 
     describe("on failure") {
       it("should throw an exception") {
-        val createUserAction = sqlu"""DELETE FROM users WHERE id = 1"""
+        val createUserAction = sqlu"""DELETE FROM users WHERE id = ${mockUserId}"""
         val createUserQuery = db.run(createUserAction)
 
         val query = for {
@@ -77,10 +83,15 @@ class PhotoRepositorySpec extends DbUnitSpec {
       it("should return a list of photos") {
         for {
           _ <- db.run(createUserAction.transactionally)
+          _ <- db.run(createSecondUserAction.transactionally)
           _ <- db.run(createPhotoAction.transactionally)
-          photo <- repository.list()
+          _ <- db.run(createSecondPhotoAction.transactionally)
+          photo <- repository.list(mockUserId)
         } yield photo match {
-          case List(_) => succeed
+          case List(_) => {
+            assert(photo.length == 1)
+            assert(photo.head.creator_id == mockUserId)
+          }
           case List()  => fail("Photos not found")
         }
       }
@@ -89,7 +100,7 @@ class PhotoRepositorySpec extends DbUnitSpec {
     describe("when no photos are found") {
       it("should return an empty list") {
         for {
-          photo <- repository.list()
+          photo <- repository.list(mockUserId)
         } yield photo match {
           case List(_) => fail("Photos found")
           case List()  => succeed

@@ -32,8 +32,11 @@ class PhotoRepository @Inject() (
     }
   }
 
-  def list(): Future[List[Photo]] = {
-    val query = photos.result
+  def list(userId: Long): Future[List[Photo]] = {
+    val query = photos
+      .filter(_.creator_id === userId)
+      .result
+
     db.run(query).map(_.headOption).map {
       case Some(photo) => List(photo)
       case None        => List()
