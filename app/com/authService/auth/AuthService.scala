@@ -11,7 +11,7 @@ class AuthService {
   private val ONE_DAY_SECONDS = 60 * 60 * 24
 
   def createToken(userId: Long): String = {
-    val claim = JwtClaim(s"""{"user_id":${userId}""").expiresIn(ONE_DAY_SECONDS)
+    val claim = JwtClaim(s"""{"user_id":${userId}}""").expiresIn(ONE_DAY_SECONDS)
     Jwt.encode(claim, "secretKey", JwtAlgorithm.HS256)
   }
 
