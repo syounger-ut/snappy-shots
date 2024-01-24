@@ -40,16 +40,24 @@ class AuthAction @Inject() (
       authService.validateToken(token) match {
         case Success(claim) =>
           val userId = Try(parseUserId(claim))
-            userId match {
-              case Success(id) =>
-                block(
-                    UserRequest(claim, token, request, id)
-                ) // token was valid - proceed!
-              case Failure(t) => Future.successful(Results.Unauthorized(t.getMessage)) // token was invalid - return 401
-            }
-        case Failure(t) => Future.successful(Results.Unauthorized(t.getMessage)) // token was invalid - return 401
+          userId match {
+            case Success(id) =>
+              block(
+                UserRequest(claim, token, request, id)
+              ) // token was valid - proceed!
+            case Failure(t) =>
+              Future.successful(
+                Results.Unauthorized(t.getMessage)
+              ) // token was invalid - return 401
+          }
+        case Failure(t) =>
+          Future.successful(
+            Results.Unauthorized(t.getMessage)
+          ) // token was invalid - return 401
       }
-    } getOrElse Future.successful(Results.Unauthorized) // no token was sent - return 401
+    } getOrElse Future.successful(
+      Results.Unauthorized
+    ) // no token was sent - return 401
 
   // Helper for extracting the token value
   private def extractBearerToken[A](request: Request[A]): Option[String] =
@@ -60,7 +68,8 @@ class AuthAction @Inject() (
   private def parseUserId(jwt: (String, String, String)): Int = {
     Try(Json.parse(jwt._2)) match {
       case Success(json) => (json \ "user_id").get.as[Int]
-      case Failure(_)    => throw new IllegalCallerException("JWT did not pass validation")
+      case Failure(_) =>
+        throw new IllegalCallerException("JWT did not pass validation")
     }
   }
 }

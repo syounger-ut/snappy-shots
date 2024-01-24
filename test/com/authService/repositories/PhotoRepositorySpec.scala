@@ -48,7 +48,8 @@ class PhotoRepositorySpec extends DbUnitSpec {
 
     describe("on failure") {
       it("should throw an exception") {
-        val createUserAction = sqlu"""DELETE FROM users WHERE id = ${mockUserId}"""
+        val createUserAction =
+          sqlu"""DELETE FROM users WHERE id = ${mockUserId}"""
         val createUserQuery = db.run(createUserAction)
 
         val query = for {
@@ -92,7 +93,7 @@ class PhotoRepositorySpec extends DbUnitSpec {
             assert(photo.length == 1)
             assert(photo.head.creator_id == mockUserId)
           }
-          case List()  => fail("Photos not found")
+          case List() => fail("Photos not found")
         }
       }
     }

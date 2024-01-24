@@ -11,7 +11,9 @@ import scala.util.{Failure, Success, Try}
 class AuthActionSpec extends AsyncUnitSpec {
   val mockAuthService: AuthService = mock[AuthService]
   val mockJwtToken = "mock-auth-token"
-  val mockHeaders: Headers = Headers("Authorization" -> s"Bearer ${mockJwtToken}")
+  val mockHeaders: Headers = Headers(
+    "Authorization" -> s"Bearer ${mockJwtToken}"
+  )
 
   def authAction: AuthAction = {
     val controllerComponents = Helpers.stubControllerComponents()
@@ -22,7 +24,9 @@ class AuthActionSpec extends AsyncUnitSpec {
     )
   }
 
-  def setupAuthServiceMock(mockResponse: Try[(String, String, String)]): Unit = {
+  def setupAuthServiceMock(
+    mockResponse: Try[(String, String, String)]
+  ): Unit = {
     (mockAuthService.validateToken _)
       .expects(mockJwtToken)
       .returns(mockResponse)
@@ -38,17 +42,20 @@ class AuthActionSpec extends AsyncUnitSpec {
   describe("when an auth token is provided") {
     describe("when the token is valid") {
       describe("when the jwt claim payload is invalid") {
-        val mockAuthServiceResponse = Success("mock-header", s"""{}""", "mock-signature")
+        val mockAuthServiceResponse =
+          Success("mock-header", s"""{}""", "mock-signature")
 
         it("should return unauthorized status") {
           setupAuthServiceMock(mockAuthServiceResponse)
-          val subject = authAction { Ok }.apply(FakeRequest().withHeaders(mockHeaders))
+          val subject =
+            authAction { Ok }.apply(FakeRequest().withHeaders(mockHeaders))
           subject map { r => assert(r.header.status == UNAUTHORIZED) }
         }
       }
 
       describe("when jwt claim payload is valid") {
-        val mockAuthServiceResponse = Success("mock-header", s"""{"user_id":1}""", "mock-signature")
+        val mockAuthServiceResponse =
+          Success("mock-header", s"""{"user_id":1}""", "mock-signature")
 
         it("should return ok status") {
           setupAuthServiceMock(mockAuthServiceResponse)
@@ -70,7 +77,8 @@ class AuthActionSpec extends AsyncUnitSpec {
 
       it("should return unauthorized status") {
         setupAuthServiceMock(Failure(new Exception("Something went wrong")))
-        val subject = authAction { Ok }.apply(FakeRequest().withHeaders(headers))
+        val subject =
+          authAction { Ok }.apply(FakeRequest().withHeaders(headers))
         subject map { r => assert(r.header.status == UNAUTHORIZED) }
       }
     }

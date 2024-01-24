@@ -50,7 +50,13 @@ class PhotosControllerSpec extends UnitSpec {
   def setupAuth(): Unit = {
     (mockAuthService.validateToken _)
       .expects(mockJwtToken)
-      .returns(Success("mock-header", s"""{"user_id":${mockUserId}}""", "mock-signature"))
+      .returns(
+        Success(
+          "mock-header",
+          s"""{"user_id":${mockUserId}}""",
+          "mock-signature"
+        )
+      )
   }
 
   describe("#getPhotos") {
