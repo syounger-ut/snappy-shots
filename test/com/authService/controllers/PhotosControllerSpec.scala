@@ -32,15 +32,16 @@ class PhotosControllerSpec extends UnitSpec {
   val authHeaders: (String, String) =
     ("Authorization", s"Bearer ${mockJwtToken}")
 
-  val mockId: Int = 123
+  val mockUserId: Int = 321
+  val mockPhotoId: Int = 123
   val mockDateTime: Instant = Instant.now()
   val mockPhoto: Option[Photo] = Some(
     Photo(
-      1,
+      mockPhotoId,
       "My wonderful photo",
       Some("A beautiful photo scenery"),
       Some("https://www.example.com/my-photo.jpg"),
-      1,
+      mockUserId,
       Some(mockDateTime),
       Some(mockDateTime)
     )
@@ -49,7 +50,7 @@ class PhotosControllerSpec extends UnitSpec {
   def setupAuth(): Unit = {
     (mockAuthService.validateToken _)
       .expects(mockJwtToken)
-      .returns(Success("mock-header", "mock-claim", "mock-signature"))
+      .returns(Success("mock-header", s"""{"user_id":${mockUserId}}""", "mock-signature"))
   }
 
   describe("#getPhotos") {
@@ -57,11 +58,11 @@ class PhotosControllerSpec extends UnitSpec {
       mockResponse match {
         case Some(res) =>
           (mockPhotoRepository.list _)
-            .expects()
+            .expects(mockUserId)
             .returns(Future.successful(List(res)))
         case None =>
           (mockPhotoRepository.list _)
-            .expects()
+            .expects(mockUserId)
             .returns(Future.successful(List()))
       }
     }
@@ -83,7 +84,7 @@ class PhotosControllerSpec extends UnitSpec {
         val bodyText: String = contentAsString(response)
         assert(responseStatus == OK)
         assert(
-          bodyText == s"[{\"id\":1,\"title\":\"My wonderful photo\",\"description\":\"A beautiful photo scenery\",\"source\":\"https://www.example.com/my-photo.jpg\",\"creator_id\":1,\"created_at\":\"${mockDateTime.toString}\",\"updated_at\":\"${mockDateTime.toString}\"}]"
+          bodyText == s"[{\"id\":${mockPhotoId},\"title\":\"My wonderful photo\",\"description\":\"A beautiful photo scenery\",\"source\":\"https://www.example.com/my-photo.jpg\",\"creator_id\":${mockUserId},\"created_at\":\"${mockDateTime.toString}\",\"updated_at\":\"${mockDateTime.toString}\"}]"
         )
       }
     }
@@ -93,6 +94,8 @@ class PhotosControllerSpec extends UnitSpec {
         val response = setupResponse(false)
         val responseStatus = status(response)
         assert(responseStatus == NOT_FOUND)
+        val bodyText: String = contentAsString(response)
+        assert(bodyText == s"[]")
       }
     }
   }
@@ -102,11 +105,11 @@ class PhotosControllerSpec extends UnitSpec {
       mockResponse match {
         case Some(res) =>
           (mockPhotoRepository.get _)
-            .expects(mockId)
+            .expects(mockPhotoId)
             .returns(Future.successful(Some(res)))
         case None =>
           (mockPhotoRepository.get _)
-            .expects(mockId)
+            .expects(mockPhotoId)
             .returns(Future.successful(None))
       }
     }
@@ -128,7 +131,7 @@ class PhotosControllerSpec extends UnitSpec {
         val bodyText: String = contentAsString(response)
         assert(responseStatus == OK)
         assert(
-          bodyText == s"{\"id\":1,\"title\":\"My wonderful photo\",\"description\":\"A beautiful photo scenery\",\"source\":\"https://www.example.com/my-photo.jpg\",\"creator_id\":1,\"created_at\":\"${mockDateTime.toString}\",\"updated_at\":\"${mockDateTime.toString}\"}"
+          bodyText == s"{\"id\":${mockPhotoId},\"title\":\"My wonderful photo\",\"description\":\"A beautiful photo scenery\",\"source\":\"https://www.example.com/my-photo.jpg\",\"creator_id\":${mockUserId},\"created_at\":\"${mockDateTime.toString}\",\"updated_at\":\"${mockDateTime.toString}\"}"
         )
       }
     }
@@ -144,11 +147,11 @@ class PhotosControllerSpec extends UnitSpec {
 
   describe("#updatePhoto") {
     val mockPhotoUpdate = Photo(
-      id = 1,
+      id = mockPhotoId,
       title = "Updated title",
       description = Some("A beautiful photo scenery"),
       source = Some("https://www.example.com/my-photo.jpg"),
-      creator_id = 1,
+      creator_id = mockUserId,
       created_at = None,
       updated_at = None
     )
@@ -159,11 +162,11 @@ class PhotosControllerSpec extends UnitSpec {
     )
 
     val requestBodyGood = s"""{
-      "id":1,
+      "id":${mockPhotoId},
       "title":"Updated title",
       "description":"A beautiful photo scenery",
       "source":"https://www.example.com/my-photo.jpg",
-      "creator_id":1
+      "creator_id":${mockUserId}
     }"""
     val requestBodyBad = s"""{
       "title":"Missing required fields"
@@ -177,12 +180,12 @@ class PhotosControllerSpec extends UnitSpec {
       mockResponse match {
         case Some(res) =>
           (mockPhotoRepository.update _)
-            .expects(mockId, mockPhotoToUpdate)
+            .expects(mockPhotoId, mockPhotoToUpdate)
             .returns(Future.successful(Some(res)))
             .repeated(repositoryCallCount)
         case None =>
           (mockPhotoRepository.update _)
-            .expects(mockId, mockPhotoToUpdate)
+            .expects(mockPhotoId, mockPhotoToUpdate)
             .returns(Future.successful(None))
             .repeated(repositoryCallCount)
       }
@@ -208,7 +211,7 @@ class PhotosControllerSpec extends UnitSpec {
         .withHeaders(authHeaders)
         .withJsonBody(Json.parse(requestBody))
 
-      controller.updatePhoto(mockId).apply(fakeRequest)
+      controller.updatePhoto(mockPhotoId).apply(fakeRequest)
     }
 
     describe("when the json payload is not valid") {
@@ -235,7 +238,7 @@ class PhotosControllerSpec extends UnitSpec {
           val bodyText: String = contentAsString(response)
           assert(responseStatus == OK)
           assert(
-            bodyText == s"{\"id\":1,\"title\":\"Updated title\",\"description\":\"A beautiful photo scenery\",\"source\":\"https://www.example.com/my-photo.jpg\",\"creator_id\":1,\"created_at\":\"${mockDateTime.toString}\",\"updated_at\":\"${mockDateTime.toString}\"}"
+            bodyText == s"{\"id\":${mockPhotoId},\"title\":\"Updated title\",\"description\":\"A beautiful photo scenery\",\"source\":\"https://www.example.com/my-photo.jpg\",\"creator_id\":${mockUserId},\"created_at\":\"${mockDateTime.toString}\",\"updated_at\":\"${mockDateTime.toString}\"}"
           )
         }
       }
@@ -257,7 +260,7 @@ class PhotosControllerSpec extends UnitSpec {
   describe("#deletePhoto") {
     def setupPhotoRepository(mockResponse: Int) = {
       (mockPhotoRepository.delete _)
-        .expects(mockId)
+        .expects(mockPhotoId)
         .returns(Future.successful(mockResponse))
     }
 
@@ -266,7 +269,7 @@ class PhotosControllerSpec extends UnitSpec {
       setupPhotoRepository(repositoryResponse)
 
       controller
-        .deletePhoto(mockId)
+        .deletePhoto(mockPhotoId)
         .apply(FakeRequest().withHeaders(authHeaders))
     }
 

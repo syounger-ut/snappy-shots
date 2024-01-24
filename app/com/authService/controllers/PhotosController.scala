@@ -3,7 +3,7 @@ package com.authService.controllers
 import com.authService.auth.AuthAction
 import com.authService.models.Photo
 import com.authService.repositories._
-import play.api.libs.json.{JsSuccess, Json}
+import play.api.libs.json._
 import play.api.mvc._
 
 import javax.inject.{Inject, Singleton}
@@ -18,8 +18,8 @@ class PhotosController @Inject() (
   extends AbstractController(cc) {
 
   def getPhotos: Action[AnyContent] = authAction.async { implicit request =>
-    photosRepository.list() map {
-      case List() => NotFound
+    photosRepository.list(request.userId) map {
+      case List() => NotFound(Json.arr())
       case photos => Ok(Json.toJson(photos))
     }
   }
