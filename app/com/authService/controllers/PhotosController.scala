@@ -31,7 +31,7 @@ class PhotosController @Inject() (
    */
   def getPhoto(photoId: Int): Action[AnyContent] = authAction.async {
     implicit request =>
-      photosRepository.get(photoId) map {
+      photosRepository.get(photoId, request.userId) map {
         case Some(photo) => Ok(Json.toJson(photo))
         case None        => NotFound
       }

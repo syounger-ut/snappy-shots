@@ -71,10 +71,23 @@ class PhotoRepositorySpec extends DbUnitSpec {
       for {
         _ <- db.run(createUserAction.transactionally)
         _ <- db.run(createPhotoAction.transactionally)
-        photo <- repository.get(1)
+        photo <- repository.get(1, 1)
       } yield photo match {
         case Some(_) => succeed
-        case None    => fail("Photo not found")
+        case None    => fail("Photo should be found")
+      }
+    }
+
+    it("should not return another users photo") {
+      for {
+        _ <- db.run(createUserAction.transactionally)
+        _ <- db.run(createSecondUserAction.transactionally)
+        _ <- db.run(createPhotoAction.transactionally)
+        _ <- db.run(createSecondPhotoAction.transactionally)
+        photo <- repository.get(2, 1)
+      } yield photo match {
+        case Some(_) => fail("Photo should not be found")
+        case None    => succeed
       }
     }
   }

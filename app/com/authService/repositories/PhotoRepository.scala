@@ -43,8 +43,12 @@ class PhotoRepository @Inject() (
     }
   }
 
-  def get(id: Long): Future[Option[Photo]] = {
-    val query = photos.filter(_.id === id).result.headOption
+  def get(id: Long, userId: Long): Future[Option[Photo]] = {
+    val query = photos
+      .filter(table =>
+        table.id === id &&
+        table.creator_id === userId
+      ).result.headOption
     db.run(query)
   }
 

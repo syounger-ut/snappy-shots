@@ -111,11 +111,11 @@ class PhotosControllerSpec extends UnitSpec {
       mockResponse match {
         case Some(res) =>
           (mockPhotoRepository.get _)
-            .expects(mockPhotoId)
+            .expects(mockPhotoId, mockUserId)
             .returns(Future.successful(Some(res)))
         case None =>
           (mockPhotoRepository.get _)
-            .expects(mockPhotoId)
+            .expects(mockPhotoId, mockUserId)
             .returns(Future.successful(None))
       }
     }
