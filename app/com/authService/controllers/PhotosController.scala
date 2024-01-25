@@ -19,8 +19,11 @@ class PhotosController @Inject() (
 
   def getPhotos: Action[AnyContent] = authAction.async { implicit request =>
     photosRepository.list(request.userId) map {
-      case List() => NotFound(Json.arr())
-      case photos => Ok(Json.toJson(photos))
+      case List() =>
+        NotFound(
+          Json.obj("message" -> "Photos not found", "photos" -> Json.arr())
+        )
+      case photos => Ok(Json.obj("photos" -> Json.toJson(photos)))
     }
   }
 
@@ -33,7 +36,7 @@ class PhotosController @Inject() (
     implicit request =>
       photosRepository.get(photoId, request.userId) map {
         case Some(photo) => Ok(Json.toJson(photo))
-        case None        => NotFound
+        case None        => NotFound(Json.obj("message" -> "Photo not found"))
       }
   }
 
@@ -52,7 +55,8 @@ class PhotosController @Inject() (
                 .update(photoId, request.userId, photo)
                 .map {
                   case Some(updatedPhoto) => Ok(Json.toJson(updatedPhoto))
-                  case None               => NotFound
+                  case None =>
+                    NotFound(Json.obj("message" -> "Photo not updated"))
                 }
             case _ => Future(BadRequest)
           }
@@ -69,7 +73,7 @@ class PhotosController @Inject() (
     implicit request =>
       photosRepository.delete(photoId, request.userId) map {
         case 1 => Ok
-        case _ => NotFound
+        case _ => NotFound(Json.obj("message" -> "Photo not deleted"))
       }
   }
 }

@@ -90,7 +90,7 @@ class PhotosControllerSpec extends UnitSpec {
         val bodyText: String = contentAsString(response)
         assert(responseStatus == OK)
         assert(
-          bodyText == s"[{\"id\":${mockPhotoId},\"title\":\"My wonderful photo\",\"description\":\"A beautiful photo scenery\",\"source\":\"https://www.example.com/my-photo.jpg\",\"creator_id\":${mockUserId},\"created_at\":\"${mockDateTime.toString}\",\"updated_at\":\"${mockDateTime.toString}\"}]"
+          bodyText == s"{\"photos\":[{\"id\":${mockPhotoId},\"title\":\"My wonderful photo\",\"description\":\"A beautiful photo scenery\",\"source\":\"https://www.example.com/my-photo.jpg\",\"creator_id\":${mockUserId},\"created_at\":\"${mockDateTime.toString}\",\"updated_at\":\"${mockDateTime.toString}\"}]}"
         )
       }
     }
@@ -101,7 +101,7 @@ class PhotosControllerSpec extends UnitSpec {
         val responseStatus = status(response)
         assert(responseStatus == NOT_FOUND)
         val bodyText: String = contentAsString(response)
-        assert(bodyText == s"[]")
+        assert(bodyText == s"{\"message\":\"Photos not found\",\"photos\":[]}")
       }
     }
   }
@@ -147,6 +147,8 @@ class PhotosControllerSpec extends UnitSpec {
         val response = setupResponse(false)
         val responseStatus = status(response)
         assert(responseStatus == NOT_FOUND)
+        val bodyText: String = contentAsString(response)
+        assert(bodyText == s"{\"message\":\"Photo not found\"}")
       }
     }
   }
@@ -258,6 +260,8 @@ class PhotosControllerSpec extends UnitSpec {
           )
           val responseStatus = status(response)
           assert(responseStatus == NOT_FOUND)
+          val bodyText: String = contentAsString(response)
+          assert(bodyText == s"{\"message\":\"Photo not updated\"}")
         }
       }
     }
@@ -292,6 +296,8 @@ class PhotosControllerSpec extends UnitSpec {
         val response = setupResponse(repositoryResponse = 0)
         val responseStatus = status(response)
         assert(responseStatus == NOT_FOUND)
+        val bodyText: String = contentAsString(response)
+        assert(bodyText == s"{\"message\":\"Photo not deleted\"}")
       }
     }
   }
