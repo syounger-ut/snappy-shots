@@ -266,7 +266,7 @@ class PhotosControllerSpec extends UnitSpec {
   describe("#deletePhoto") {
     def setupPhotoRepository(mockResponse: Int) = {
       (mockPhotoRepository.delete _)
-        .expects(mockPhotoId)
+        .expects(mockPhotoId, mockUserId)
         .returns(Future.successful(mockResponse))
     }
 

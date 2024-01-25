@@ -192,16 +192,33 @@ class PhotoRepositorySpec extends DbUnitSpec {
   describe("#delete") {
     val session = db.createSession()
 
-    it("should delete the photo") {
-      for {
-        _ <- db.run(createUserAction.transactionally)
-        _ <- db.run(createPhotoAction.transactionally)
-        _ <- repository.delete(1)
-      } yield {
-        val result = session
-          .createStatement()
-          .executeQuery("SELECT * FROM photos WHERE id = 1");
-        assert(!result.next())
+    describe("when the user is the creator of the photo") {
+      it("should delete the photo") {
+        for {
+          _ <- db.run(createUserAction.transactionally)
+          _ <- db.run(createPhotoAction.transactionally)
+          _ <- repository.delete(1, mockUserId)
+        } yield {
+          val result = session
+            .createStatement()
+            .executeQuery("SELECT * FROM photos WHERE id = 1");
+          assert(!result.next())
+        }
+      }
+    }
+
+    describe("when the user is not the creator of the photo") {
+      it("should not delete the photo") {
+        for {
+          _ <- db.run(createUserAction.transactionally)
+          _ <- db.run(createPhotoAction.transactionally)
+          _ <- repository.delete(1, mockUserId + 1)
+        } yield {
+          val result = session
+            .createStatement()
+            .executeQuery("SELECT * FROM photos WHERE id = 1");
+          assert(result.next())
+        }
       }
     }
   }

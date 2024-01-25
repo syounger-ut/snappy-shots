@@ -74,8 +74,10 @@ class PhotoRepository @Inject() (
     }
   }
 
-  def delete(id: Long): Future[Int] = {
-    val action = photos.filter(_.id === id).delete
+  def delete(id: Long, userId: Long): Future[Int] = {
+    val action = photos
+      .filter(table => table.id === id && table.creator_id === userId)
+      .delete
     db.run(action)
   }
 }

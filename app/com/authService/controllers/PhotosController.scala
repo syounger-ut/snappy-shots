@@ -67,7 +67,7 @@ class PhotosController @Inject() (
    */
   def deletePhoto(photoId: Int): Action[AnyContent] = authAction.async {
     implicit request =>
-      photosRepository.delete(photoId) map {
+      photosRepository.delete(photoId, request.userId) map {
         case 1 => Ok
         case _ => NotFound
       }
