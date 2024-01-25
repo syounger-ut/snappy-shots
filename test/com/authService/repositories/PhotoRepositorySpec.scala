@@ -124,17 +124,19 @@ class PhotoRepositorySpec extends DbUnitSpec {
   }
 
   describe("#update") {
-    def updatePhoto(photoId: Int): Future[Option[Photo]] = {
+    def updatePhoto(photoId: Int, userId: Int): Future[Option[Photo]] = {
       val createPhotoActionToUpdate =
         sqlu"""INSERT INTO photos (id, title, creator_id) VALUES(${photoId}, 'My great photo', 1)"""
 
       for {
         _ <- db.run(createUserAction.transactionally)
+        _ <- db.run(createSecondUserAction.transactionally)
         _ <- db.run(createPhotoActionToUpdate.transactionally)
         photo <- repository.update(
-          mockPhoto.id,
+          photoId,
+          userId,
           mockPhoto.copy(
-            id = 1,
+            id = photoId,
             description = Some("New description"),
             creator_id = 1
           )
@@ -145,27 +147,43 @@ class PhotoRepositorySpec extends DbUnitSpec {
     describe("on success") {
       val existingPhotoId = 1
 
-      it("should update a photo") {
-        for {
-          photo <- updatePhoto(existingPhotoId)
-        } yield photo match {
-          case Some(photo) =>
-            assert(photo.description.contains("New description"))
-          case None => fail("Photo not found")
+      describe("when the photo was created by the user") {
+        it("should update a photo") {
+          for {
+            photo <- updatePhoto(existingPhotoId, 1)
+          } yield photo match {
+            case Some(photo) =>
+              assert(photo.description.contains("New description"))
+            case None => fail("Photo not found")
+          }
         }
       }
-    }
 
-    describe("on failure") {
-      val nonExistingPhotoId = 2
+      describe("when the photo was not created by the user") {
+        it("should not allow updating of another users photo") {
+          for {
+            photo <- updatePhoto(existingPhotoId, 2)
+          } yield photo match {
+            case Some(_) => {
+              println(photo)
+              fail("Photo should not be updated")
+            }
+            case None => succeed
+          }
+        }
+      }
 
-      it("should return none") {
-        for {
-          photo <- updatePhoto(nonExistingPhotoId)
-        } yield photo match {
-          case Some(photo) =>
-            assert(photo.description.contains("New description"))
-          case None => fail("Photo not found")
+      describe("when trying to update a photo that doesn't exist") {
+        val nonExistingPhotoId = 2
+
+        it("should return none") {
+          for {
+            photo <- updatePhoto(nonExistingPhotoId, 1)
+          } yield photo match {
+            case Some(photo) =>
+              assert(photo.description.contains("New description"))
+            case None => fail("Photo not found")
+          }
         }
       }
     }

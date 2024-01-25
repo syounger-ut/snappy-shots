@@ -186,12 +186,12 @@ class PhotosControllerSpec extends UnitSpec {
       mockResponse match {
         case Some(res) =>
           (mockPhotoRepository.update _)
-            .expects(mockPhotoId, mockPhotoToUpdate)
+            .expects(mockPhotoId, mockUserId, mockPhotoToUpdate)
             .returns(Future.successful(Some(res)))
             .repeated(repositoryCallCount)
         case None =>
           (mockPhotoRepository.update _)
-            .expects(mockPhotoId, mockPhotoToUpdate)
+            .expects(mockPhotoId, mockUserId, mockPhotoToUpdate)
             .returns(Future.successful(None))
             .repeated(repositoryCallCount)
       }

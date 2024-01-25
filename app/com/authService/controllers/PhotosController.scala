@@ -49,7 +49,7 @@ class PhotosController @Inject() (
           Json.fromJson[Photo](jsValue) match {
             case JsSuccess(photo, _) =>
               photosRepository
-                .update(photoId, photo)
+                .update(photoId, request.userId, photo)
                 .map {
                   case Some(updatedPhoto) => Ok(Json.toJson(updatedPhoto))
                   case None               => NotFound

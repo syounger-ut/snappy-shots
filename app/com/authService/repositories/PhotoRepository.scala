@@ -47,22 +47,30 @@ class PhotoRepository @Inject() (
     val query = photos
       .filter(table =>
         table.id === id &&
-        table.creator_id === userId
-      ).result.headOption
+          table.creator_id === userId
+      )
+      .result
+      .headOption
     db.run(query)
   }
 
-  def update(photoId: Long, photo: Photo): Future[Option[Photo]] = {
+  def update(
+    photoId: Long,
+    userId: Long,
+    photo: Photo
+  ): Future[Option[Photo]] = {
     val action = photos
-      .filter(_.id === photoId)
+      .filter(table => table.id === photoId && table.creator_id === userId)
       .map(photo =>
         (photo.title, photo.description, photo.source, photo.creator_id)
       )
       .update((photo.title, photo.description, photo.source, photo.creator_id))
 
     db.run(action.asTry).map {
-      case Success(_) => Some(photo)
-      case Failure(_) => None
+      case Success(1) => Some(photo)
+      case Success(0) => None
+      case Failure(e: Exception) =>
+        throw new IllegalStateException(e.getMessage)
     }
   }
 
