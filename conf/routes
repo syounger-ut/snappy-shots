@@ -3,5 +3,12 @@ GET /api/post/:postId           com.authService.controllers.ApiController.getPos
 GET /api/post/:postId/comments  com.authService.controllers.ApiController.getComments(postId: Int)
 GET /api/addUser                com.authService.controllers.ApiController.addUser()
 
+# Photo routes
+POST /api/photos                 com.authService.controllers.PhotosController.createPhoto()
+GET /api/photos                  com.authService.controllers.PhotosController.getPhotos()
+GET /api/photos/:photoId         com.authService.controllers.PhotosController.getPhoto(photoId: Int)
+PUT /api/photos/:photoId         com.authService.controllers.PhotosController.updatePhoto(photoId: Int)
+DELETE /api/photos/:photoId      com.authService.controllers.PhotosController.deletePhoto(photoId: Int)
+
 GET /auth/login                  com.authService.controllers.AuthenticationController.login()
 POST /auth/register             com.authService.controllers.AuthenticationController.register()

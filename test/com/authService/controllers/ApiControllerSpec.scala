@@ -43,7 +43,7 @@ class ApiControllerSpec extends UnitSpec {
     def setupAuth(): Unit = {
       (mockAuthService.validateToken _)
         .expects(mockJwtToken)
-        .returns(Success("mock-header", "mock-claim", "mock-signature"))
+        .returns(Success("mock-header", s"""{"user_id":1}""", "mock-signature"))
     }
 
     describe("#getPost") {

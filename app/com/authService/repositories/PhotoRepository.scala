@@ -32,27 +32,52 @@ class PhotoRepository @Inject() (
     }
   }
 
-  def get(id: Long): Future[Option[Photo]] = {
-    val query = photos.filter(_.id === id).result.headOption
+  def list(userId: Long): Future[List[Photo]] = {
+    val query = photos
+      .filter(_.creator_id === userId)
+      .result
+
+    db.run(query).map(_.headOption).map {
+      case Some(photo) => List(photo)
+      case None        => List()
+    }
+  }
+
+  def get(id: Long, userId: Long): Future[Option[Photo]] = {
+    val query = photos
+      .filter(table =>
+        table.id === id &&
+          table.creator_id === userId
+      )
+      .result
+      .headOption
     db.run(query)
   }
 
-  def update(photo: Photo): Future[Option[Photo]] = {
+  def update(
+    photoId: Long,
+    userId: Long,
+    photo: Photo
+  ): Future[Option[Photo]] = {
     val action = photos
-      .filter(_.id === photo.id)
+      .filter(table => table.id === photoId && table.creator_id === userId)
       .map(photo =>
         (photo.title, photo.description, photo.source, photo.creator_id)
       )
       .update((photo.title, photo.description, photo.source, photo.creator_id))
 
     db.run(action.asTry).map {
-      case Success(_) => Some(photo)
-      case Failure(_) => None
+      case Success(1) => Some(photo)
+      case Success(0) => None
+      case Failure(e: Exception) =>
+        throw new IllegalStateException(e.getMessage)
     }
   }
 
-  def delete(id: Long): Future[Int] = {
-    val action = photos.filter(_.id === id).delete
+  def delete(id: Long, userId: Long): Future[Int] = {
+    val action = photos
+      .filter(table => table.id === id && table.creator_id === userId)
+      .delete
     db.run(action)
   }
 }

@@ -1,58 +1,84 @@
 package com.authService.auth
 
-import akka.stream.testkit.NoMaterializer
 import com.authService.AsyncUnitSpec
-import play.api.http.Status.{OK, UNAUTHORIZED}
-import play.api.mvc.{BodyParsers, Headers, Result}
+import play.api.http.Status._
+import play.api.mvc.{BodyParsers, Headers}
 import play.api.mvc.Results.Ok
 import play.api.test.{FakeRequest, Helpers}
-import play.mvc._
 
-import scala.concurrent.Future
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
 class AuthActionSpec extends AsyncUnitSpec {
   val mockAuthService: AuthService = mock[AuthService]
+  val mockJwtToken = "mock-auth-token"
+  val mockHeaders: Headers = Headers(
+    "Authorization" -> s"Bearer ${mockJwtToken}"
+  )
 
-  def prepareResponse(headers: Headers = Headers()): Future[Result] = {
+  def authAction: AuthAction = {
     val controllerComponents = Helpers.stubControllerComponents()
     val mockBodyParsers = mock[BodyParsers.Default]
-    val authAction =
-      new AuthAction(mockBodyParsers, mockAuthService)(
-        controllerComponents.executionContext
-      )
-    val request = FakeRequest().withHeaders(headers)
-    authAction { _ => Ok }.apply(request)
+
+    new AuthAction(mockBodyParsers, mockAuthService)(
+      controllerComponents.executionContext
+    )
+  }
+
+  def setupAuthServiceMock(
+    mockResponse: Try[(String, String, String)]
+  ): Unit = {
+    (mockAuthService.validateToken _)
+      .expects(mockJwtToken)
+      .returns(mockResponse)
   }
 
   describe("when no auth token is provided") {
     it("should should be unauthorized") {
-      val subject = prepareResponse()
+      val subject = authAction { Ok }.apply(FakeRequest())
       subject map { r => assert(r.header.status == UNAUTHORIZED) }
     }
   }
 
   describe("when an auth token is provided") {
-    val mockJwtToken = "mock-auth-token"
-
     describe("when the token is valid") {
-      it("should return ok status") {
-        (mockAuthService.validateToken _)
-          .expects(mockJwtToken)
-          .returns(Success("mock-header", "mock-claim", "mock-signature"))
-        val subject =
-          prepareResponse(Headers("Authorization" -> s"Bearer ${mockJwtToken}"))
-        subject map { r => assert(r.header.status == OK) }
+      describe("when the jwt claim payload is invalid") {
+        val mockAuthServiceResponse =
+          Success("mock-header", s"""{}""", "mock-signature")
+
+        it("should return unauthorized status") {
+          setupAuthServiceMock(mockAuthServiceResponse)
+          val subject =
+            authAction { Ok }.apply(FakeRequest().withHeaders(mockHeaders))
+          subject map { r => assert(r.header.status == UNAUTHORIZED) }
+        }
+      }
+
+      describe("when jwt claim payload is valid") {
+        val mockAuthServiceResponse =
+          Success("mock-header", s"""{"user_id":1}""", "mock-signature")
+
+        it("should return ok status") {
+          setupAuthServiceMock(mockAuthServiceResponse)
+
+          val subject = authAction { request =>
+            assert(request.userId == 1)
+            Ok
+          }.apply(FakeRequest().withHeaders(mockHeaders))
+
+          subject map { r =>
+            assert(r.header.status == OK)
+          }
+        }
       }
     }
 
     describe("when the token is invalid") {
+      val headers = Headers("Authorization" -> s"Bearer ${mockJwtToken}")
+
       it("should return unauthorized status") {
-        (mockAuthService.validateToken _)
-          .expects(mockJwtToken)
-          .returns(Failure(new Exception("Something went wrong")))
+        setupAuthServiceMock(Failure(new Exception("Something went wrong")))
         val subject =
-          prepareResponse(Headers("Authorization" -> s"Bearer ${mockJwtToken}"))
+          authAction { Ok }.apply(FakeRequest().withHeaders(headers))
         subject map { r => assert(r.header.status == UNAUTHORIZED) }
       }
     }
