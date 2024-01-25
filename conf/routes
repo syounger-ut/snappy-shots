@@ -4,6 +4,7 @@ GET /api/post/:postId/comments  com.authService.controllers.ApiController.getCom
 GET /api/addUser                com.authService.controllers.ApiController.addUser()
 
 # Photo routes
+POST /api/photos                 com.authService.controllers.PhotosController.createPhoto()
 GET /api/photos                  com.authService.controllers.PhotosController.getPhotos()
 GET /api/photos/:photoId         com.authService.controllers.PhotosController.getPhoto(photoId: Int)
 PUT /api/photos/:photoId         com.authService.controllers.PhotosController.updatePhoto(photoId: Int)

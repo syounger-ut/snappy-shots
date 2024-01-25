@@ -59,6 +59,80 @@ class PhotosControllerSpec extends UnitSpec {
       )
   }
 
+  describe("#createPhoto") {
+    def setupResponse(requestBody: Option[String]) = {
+      setupAuth()
+
+      requestBody match {
+        case Some(body) =>
+          controller
+            .createPhoto()
+            .apply(
+              FakeRequest()
+                .withHeaders(authHeaders)
+                .withJsonBody(
+                  Json.parse(body)
+                )
+            )
+        case None =>
+          controller
+            .createPhoto()
+            .apply(
+              FakeRequest()
+                .withHeaders(authHeaders)
+            )
+      }
+    }
+
+    describe("when the json payload is valid") {
+      it("should create a photo") {
+        (mockPhotoRepository.create _)
+          .expects(*)
+          .returns(Future.successful(mockPhoto.get))
+
+        val requestBody = s"""{
+          "id":123,
+          "title":"My wonderful photo",
+          "description":"A beautiful photo scenery",
+          "source":"https://www.example.com/my-photo.jpg",
+          "creator_id":${mockUserId}
+        }"""
+
+        val response = setupResponse(Some(requestBody))
+        val responseStatus = status(response)
+        val bodyText: String = contentAsString(response)
+        assert(responseStatus == CREATED)
+        bodyText contains s"{\"id\":${mockPhotoId},\"title\":\"My wonderful photo\",\"description\":\"A beautiful photo scenery\",\"source\":\"https://www.example.com/my-photo.jpg\",\"creator_id\":${mockUserId}}"
+      }
+    }
+
+    describe("when the json payload is invalid") {
+      it("should return Bad Request") {
+        val requestBody = s"""{
+          "foo": "Some invalid payload"
+        }"""
+
+        val response = setupResponse(Some(requestBody))
+        val responseStatus = status(response)
+        val bodyText: String = contentAsString(response)
+        assert(responseStatus == BAD_REQUEST)
+        assert(bodyText == s"{\"message\":\"Invalid photo\"}")
+      }
+    }
+
+    describe("when no json payload is provided") {
+      it("should return Bad Request") {
+        val response = setupResponse(None)
+        val responseStatus = status(response)
+        val bodyText: String = contentAsString(response)
+        assert(responseStatus == BAD_REQUEST)
+        assert(
+          bodyText == s"{\"message\":\"Invalid photo, no payload was provided\"}"
+        )
+      }
+    }
+  }
+
   describe("#getPhotos") {
     def setupPhotoRepository(mockResponse: Option[Photo] = None) = {
       mockResponse match {

@@ -8,6 +8,7 @@ import play.api.mvc._
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Success, Try}
 
 @Singleton
 class PhotosController @Inject() (
@@ -16,6 +17,29 @@ class PhotosController @Inject() (
   authAction: AuthAction
 )(implicit ec: ExecutionContext)
   extends AbstractController(cc) {
+
+  /*
+   * Create a photo
+   * @return The created photo
+   */
+  def createPhoto: Action[AnyContent] = authAction.async { implicit request =>
+    request.body.asJson match {
+      case Some(jsValue) =>
+        Try(parsePhoto(jsValue, request.userId)) match {
+          case Success(photo) =>
+            photosRepository.create(photo) map { createdPhoto =>
+              Created(Json.obj("photo" -> Json.toJson(createdPhoto)))
+            }
+          case _ => Future(BadRequest(Json.obj("message" -> "Invalid photo")))
+        }
+      case _ =>
+        Future(
+          BadRequest(
+            Json.obj("message" -> "Invalid photo, no payload was provided")
+          )
+        )
+    }
+  }
 
   def getPhotos: Action[AnyContent] = authAction.async { implicit request =>
     photosRepository.list(request.userId) map {
@@ -75,5 +99,17 @@ class PhotosController @Inject() (
         case 1 => Ok
         case _ => NotFound(Json.obj("message" -> "Photo not deleted"))
       }
+  }
+
+  private def parsePhoto(json: JsValue, creatorId: Long): Photo = {
+    Photo(
+      id = 0,
+      title = (json \ "title").as[String],
+      description = (json \ "description").asOpt[String],
+      source = (json \ "source").asOpt[String],
+      creator_id = creatorId,
+      created_at = None,
+      updated_at = None
+    )
   }
 }
