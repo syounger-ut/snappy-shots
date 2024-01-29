@@ -16,6 +16,7 @@ coverageExcludedFiles := ".*\\/target\\/.*"
 val jwtScalaVersion = "9.4.4"
 libraryDependencies ++= Seq(
   guice,
+  "com.amazonaws" % "aws-java-sdk" % "1.12.646",
   "org.postgresql" % "postgresql" % "42.6.0",
   "com.github.jwt-scala" %% "jwt-core" % jwtScalaVersion,
   "com.github.jwt-scala" %% "jwt-play" % jwtScalaVersion,
