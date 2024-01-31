@@ -23,11 +23,15 @@ class StorageRepository @Inject() (storageAdapter: StorageAdapter) {
    * @param file: File
    * @return PutObjectResult
    */
-  def uploadObject(bucketName: String, file: File): Try[PutObjectResult] = {
-    if (storageAdapter.objectExists(bucketName, file.getName)) {
+  def uploadObject(
+    bucketName: String,
+    fileName: String,
+    file: File
+  ): Try[PutObjectResult] = {
+    if (storageAdapter.objectExists(bucketName, fileName)) {
       throw new IllegalStateException("File already exists in bucket")
     } else {
-      Try(storageAdapter.uploadObject(bucketName, file.getName, file))
+      Try(storageAdapter.uploadObject(bucketName, fileName, file))
     }
   }
 }

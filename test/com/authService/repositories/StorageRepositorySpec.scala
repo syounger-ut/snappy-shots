@@ -88,7 +88,7 @@ class StorageRepositorySpec extends UnitSpec {
         val mockFile = new File("test/resources/test.txt")
         val result =
           intercept[IllegalStateException] {
-            repository.uploadObject(bucketName, mockFile)
+            repository.uploadObject(bucketName, mockFile.getName, mockFile)
           }
         assert(result.getMessage == "File already exists in bucket")
       }
@@ -102,7 +102,8 @@ class StorageRepositorySpec extends UnitSpec {
           val mockResult = new PutObjectResult()
           mockUploadObject(mockFile, mockResult)
 
-          val result = repository.uploadObject(bucketName, mockFile)
+          val result =
+            repository.uploadObject(bucketName, mockFile.getName, mockFile)
           assert(result.isSuccess)
           assert(result.get == mockResult)
         }
@@ -117,7 +118,8 @@ class StorageRepositorySpec extends UnitSpec {
             .expects(bucketName, mockFile.getName, mockFile)
             .throwing(mockException)
 
-          val result = repository.uploadObject(bucketName, mockFile)
+          val result =
+            repository.uploadObject(bucketName, mockFile.getName, mockFile)
           assert(result.isFailure)
         }
       }
