@@ -3,12 +3,26 @@ package com.authService.repositories
 import com.amazonaws.auth.{AWSStaticCredentialsProvider, BasicAWSCredentials}
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
-import com.amazonaws.services.s3.model.{Bucket, CreateBucketRequest}
+import com.amazonaws.services.s3.model.{
+  Bucket,
+  CreateBucketRequest,
+  ObjectMetadata,
+  PutObjectRequest,
+  PutObjectResult
+}
+
+import java.io.File
 
 trait IStorageAdapter {
   def createBucket(bucketName: String): Bucket
 
   def bucketExists(bucketName: String): Boolean
+
+  def uploadObject(
+    bucketName: String,
+    fileName: String,
+    file: File
+  ): PutObjectResult
 }
 
 trait IClientBuilder {
@@ -28,6 +42,20 @@ class StorageAdapter extends IStorageAdapter {
   def createBucket(bucketName: String): Bucket = {
     val bucketRequest = new CreateBucketRequest(bucketName)
     client.createBucket(bucketRequest)
+  }
+
+  def uploadObject(
+    bucketName: String,
+    fileName: String,
+    file: File
+  ): PutObjectResult = {
+    val request = new PutObjectRequest(bucketName, fileName, file)
+    val metadata = new ObjectMetadata()
+    metadata.setContentType("plain/text")
+    metadata.addUserMetadata("title", "someTitle")
+    request.setMetadata(metadata)
+
+    client.putObject(request)
   }
 
   private def client = new ClientBuilder(AmazonS3ClientBuilder.standard()).build
