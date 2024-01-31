@@ -1,11 +1,12 @@
 package com.authService.repositories
 
 import com.amazonaws.services.s3.model.{Bucket, PutObjectResult}
+import com.google.inject.Inject
 
 import java.io.File
 import scala.util.Try
 
-class StorageRepository(storageAdapter: StorageAdapter) {
+class StorageRepository @Inject() (storageAdapter: StorageAdapter) {
   /* Create a new bucket
    * @param bucketName: String
    * @return Bucket
