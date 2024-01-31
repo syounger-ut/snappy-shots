@@ -1,8 +1,9 @@
 package com.authService.repositories
 
-import com.amazonaws.services.s3.AmazonS3ClientBuilder
-import com.amazonaws.services.s3.model.Bucket
+import com.amazonaws.services.s3.model.{Bucket, PutObjectResult}
 import com.authService.UnitSpec
+
+import java.io.File
 
 class StorageRepositorySpec extends UnitSpec {
   val mockStorageAdapter: StorageAdapter = mock[StorageAdapter]
@@ -63,6 +64,62 @@ class StorageRepositorySpec extends UnitSpec {
 
         val bucket = repository.createBucket(bucketName)
         assert(bucket.isFailure)
+      }
+    }
+  }
+
+  describe("#upload") {
+    def mockUploadObject(file: File, result: PutObjectResult): Unit = {
+      (mockStorageAdapter.uploadObject _)
+        .expects(bucketName, file.getName, file)
+        .returning(result)
+    }
+
+    def mockObjectExists(returns: Boolean): Unit = {
+      (mockStorageAdapter.objectExists _)
+        .expects(bucketName, *)
+        .returning(returns)
+    }
+
+    describe("when the file already exists in the bucket") {
+      it("should fail to upload the file") {
+        mockObjectExists(true)
+
+        val mockFile = new File("test/resources/test.txt")
+        val result =
+          intercept[IllegalStateException] {
+            repository.uploadObject(bucketName, mockFile)
+          }
+        assert(result.getMessage == "File already exists in bucket")
+      }
+    }
+
+    describe("when the file does not exist in the bucket") {
+      describe("when the upload operation succeeds") {
+        it("should upload a file") {
+          mockObjectExists(false)
+          val mockFile = new File("test/resources/test.txt")
+          val mockResult = new PutObjectResult()
+          mockUploadObject(mockFile, mockResult)
+
+          val result = repository.uploadObject(bucketName, mockFile)
+          assert(result.isSuccess)
+          assert(result.get == mockResult)
+        }
+      }
+
+      describe("when the upload operation fails") {
+        it("should fail to upload a file") {
+          mockObjectExists(false)
+          val mockFile = new File("test/resources/test.txt")
+          val mockException = new RuntimeException("Upload failed")
+          (mockStorageAdapter.uploadObject _)
+            .expects(bucketName, mockFile.getName, mockFile)
+            .throwing(mockException)
+
+          val result = repository.uploadObject(bucketName, mockFile)
+          assert(result.isFailure)
+        }
       }
     }
   }
