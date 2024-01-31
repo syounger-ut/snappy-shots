@@ -14,9 +14,11 @@ import com.amazonaws.services.s3.model.{
 import java.io.File
 
 trait IStorageAdapter {
+  def bucketExists(bucketName: String): Boolean
+
   def createBucket(bucketName: String): Bucket
 
-  def bucketExists(bucketName: String): Boolean
+  def objectExists(bucketName: String, fileName: String): Boolean
 
   def uploadObject(
     bucketName: String,
@@ -43,6 +45,9 @@ class StorageAdapter extends IStorageAdapter {
     val bucketRequest = new CreateBucketRequest(bucketName)
     client.createBucket(bucketRequest)
   }
+
+  def objectExists(bucketName: String, fileName: String): Boolean =
+    client.doesObjectExist(bucketName, fileName)
 
   def uploadObject(
     bucketName: String,
