@@ -22,6 +22,16 @@ class StorageAdapter extends IStorageAdapter {
   private val AWS_SECRET =
     sys.env.getOrElse("SNAPPY_SHOTS_AWS_SECRET", "aws-secret-key")
 
+  def bucketExists(bucketName: String): Boolean =
+    client.doesBucketExistV2(bucketName)
+
+  def createBucket(bucketName: String): Bucket = {
+    val bucketRequest = new CreateBucketRequest(bucketName)
+    client.createBucket(bucketRequest)
+  }
+
+  private def client = new ClientBuilder(AmazonS3ClientBuilder.standard()).build
+
   private class ClientBuilder(awsClientBuilder: AmazonS3ClientBuilder)
     extends IClientBuilder {
     def build: AmazonS3 = {
@@ -36,15 +46,5 @@ class StorageAdapter extends IStorageAdapter {
         .build();
     }
   }
-
-  def bucketExists(bucketName: String): Boolean =
-    client.doesBucketExistV2(bucketName)
-
-  def createBucket(bucketName: String): Bucket = {
-    val bucketRequest = new CreateBucketRequest(bucketName)
-    client.createBucket(bucketRequest)
-  }
-
-  private def client = new ClientBuilder(AmazonS3ClientBuilder.standard()).build
 }
 // $COVERAGE-ON$
