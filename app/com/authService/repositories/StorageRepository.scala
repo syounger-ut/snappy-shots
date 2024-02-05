@@ -4,9 +4,12 @@ import com.amazonaws.services.s3.model.{Bucket, PutObjectResult}
 import com.google.inject.Inject
 
 import java.io.File
+import scala.concurrent.Future
 import scala.util.Try
 
 class StorageRepository @Inject() (storageAdapter: StorageAdapter) {
+  import scala.concurrent.ExecutionContext.Implicits.global
+
   /* Create a new bucket
    * @param bucketName: String
    * @return Bucket
@@ -27,11 +30,10 @@ class StorageRepository @Inject() (storageAdapter: StorageAdapter) {
     bucketName: String,
     fileName: String,
     file: File
-  ): Try[PutObjectResult] = {
-    if (storageAdapter.objectExists(bucketName, fileName)) {
-      throw new IllegalStateException("File already exists in bucket")
-    } else {
-      Try(storageAdapter.uploadObject(bucketName, fileName, file))
+  ): Future[Try[PutObjectResult]] = {
+    Future.fromTry(Try(storageAdapter.objectExists(bucketName, fileName))).map {
+      case false => Try(storageAdapter.uploadObject(bucketName, fileName, file))
+      case true  => throw new IllegalStateException("File already exists")
     }
   }
 }

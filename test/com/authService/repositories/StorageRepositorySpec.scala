@@ -1,11 +1,11 @@
 package com.authService.repositories
 
 import com.amazonaws.services.s3.model.{Bucket, PutObjectResult}
-import com.authService.UnitSpec
+import com.authService.{AsyncUnitSpec, UnitSpec}
 
 import java.io.File
 
-class StorageRepositorySpec extends UnitSpec {
+class StorageRepositorySpec extends AsyncUnitSpec {
   val mockStorageAdapter: StorageAdapter = mock[StorageAdapter]
   val repository = new StorageRepository(mockStorageAdapter)
   val bucketName = "mock-bucket-name"
@@ -86,11 +86,11 @@ class StorageRepositorySpec extends UnitSpec {
         mockObjectExists(true)
 
         val mockFile = new File("test/resources/test.txt")
-        val result =
-          intercept[IllegalStateException] {
-            repository.uploadObject(bucketName, mockFile.getName, mockFile)
-          }
-        assert(result.getMessage == "File already exists in bucket")
+
+        recoverToSucceededIf[IllegalStateException] {
+          repository
+            .uploadObject(bucketName, mockFile.getName, mockFile)
+        }
       }
     }
 
@@ -104,8 +104,11 @@ class StorageRepositorySpec extends UnitSpec {
 
           val result =
             repository.uploadObject(bucketName, mockFile.getName, mockFile)
-          assert(result.isSuccess)
-          assert(result.get == mockResult)
+
+          result.map { result =>
+            assert(result.isSuccess)
+            assert(result.get == mockResult)
+          }
         }
       }
 
@@ -120,7 +123,10 @@ class StorageRepositorySpec extends UnitSpec {
 
           val result =
             repository.uploadObject(bucketName, mockFile.getName, mockFile)
-          assert(result.isFailure)
+
+          result.map { result =>
+            assert(result.isFailure)
+          }
         }
       }
     }

@@ -12,6 +12,7 @@ import play.api.mvc.{
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
 @Singleton
 class StorageController @Inject() (
@@ -24,26 +25,23 @@ class StorageController @Inject() (
 
   def upload: Action[MultipartFormData[Files.TemporaryFile]] = {
     authAction.async(parse.multipartFormData) { request =>
-      request.body
-        .file("file")
-        .map { file =>
-          Future
-            .fromTry(
-              storageRepository
-                .uploadObject(
-                  BUCKET_NAME,
-                  file.filename,
-                  file.ref.path.toFile
-                )
+      request.body.file("file") match {
+        case Some(file) =>
+          storageRepository
+            .uploadObject(
+              BUCKET_NAME,
+              file.filename,
+              file.ref.path.toFile
             )
-            .map { _ => Ok("File uploaded") }
-            .recover { case e: IllegalStateException =>
+            .map {
+              case Success(_) => Ok("File uploaded")
+              case Failure(e) => BadRequest(e.getMessage)
+            }
+            .recover { case e: Throwable =>
               BadRequest(e.getMessage)
             }
-        }
-        .getOrElse {
-          throw new IllegalStateException("File upload failed")
-        }
+        case None => Future.successful(BadRequest("No file found"))
+      }
     }
   }
 }
