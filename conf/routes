@@ -10,5 +10,8 @@ GET /api/photos/:photoId         com.authService.controllers.PhotosController.ge
 PUT /api/photos/:photoId         com.authService.controllers.PhotosController.updatePhoto(photoId: Int)
 DELETE /api/photos/:photoId      com.authService.controllers.PhotosController.deletePhoto(photoId: Int)
 
+# Storate routes
+POST /api/storage                com.authService.controllers.StorageController.upload()
+
 GET /auth/login                  com.authService.controllers.AuthenticationController.login()
 POST /auth/register             com.authService.controllers.AuthenticationController.register()
