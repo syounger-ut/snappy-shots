@@ -3,6 +3,7 @@ package com.authService.controllers
 import com.authService.auth.AuthAction
 import com.authService.repositories.StorageRepository
 import play.api.libs.Files
+import play.api.libs.json.Json
 import play.api.mvc.{
   AbstractController,
   Action,
@@ -34,13 +35,14 @@ class StorageController @Inject() (
               file.ref.path.toFile
             )
             .map {
-              case Success(_) => Ok("File uploaded")
-              case Failure(e) => BadRequest(e.getMessage)
+              case Success(_) => Ok(Json.obj("message" -> "File uploaded"))
+              case Failure(e) => BadRequest(Json.obj("message" -> e.getMessage))
             }
             .recover { case e: Throwable =>
-              BadRequest(e.getMessage)
+              BadRequest(Json.obj("message" -> e.getMessage))
             }
-        case None => Future.successful(BadRequest("No file found"))
+        case None =>
+          Future.successful(BadRequest(Json.obj("message" -> "No file found")))
       }
     }
   }
