@@ -130,4 +130,45 @@ class StorageControllerSpec extends UnitSpec {
       }
     }
   }
+
+  describe("#delete") {
+    def setupResponse(fileName: String) = {
+      setupAuth()
+
+      val request = FakeRequest().withHeaders(authHeaders)
+      controller
+        .delete(fileName)
+        .apply(request)
+    }
+
+    def mockDeleteObject(): Unit = {
+      (mockStorageRepository.deleteObject _)
+        .expects(*, *)
+        .returns(Future(()))
+    }
+
+    describe("when the file is deleted") {
+      it("should return Ok") {
+        mockDeleteObject()
+
+        val response = setupResponse("file")
+        assert(status(response) == OK)
+        val bodyText: String = contentAsString(response)
+        assert(bodyText == """{"message":"File deleted"}""")
+      }
+    }
+
+    describe("when the file is not deleted") {
+      it("should return Bad Request") {
+        (mockStorageRepository.deleteObject _)
+          .expects(*, *)
+          .returns(Future.failed(new Exception("mock-error")))
+
+        val response = setupResponse("file")
+        assert(status(response) == BAD_REQUEST)
+        val bodyText: String = contentAsString(response)
+        assert(bodyText == """{"message":"mock-error"}""")
+      }
+    }
+  }
 }

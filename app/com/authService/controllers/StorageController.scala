@@ -7,6 +7,7 @@ import play.api.libs.json.Json
 import play.api.mvc.{
   AbstractController,
   Action,
+  AnyContent,
   ControllerComponents,
   MultipartFormData
 }
@@ -44,6 +45,17 @@ class StorageController @Inject() (
         case None =>
           Future.successful(BadRequest(Json.obj("message" -> "No file found")))
       }
+    }
+  }
+
+  def delete(fileName: String): Action[AnyContent] = {
+    authAction.async { request =>
+      storageRepository
+        .deleteObject(BUCKET_NAME, fileName)
+        .map(_ => Ok(Json.obj("message" -> "File deleted")))
+        .recover { case e: Throwable =>
+          BadRequest(Json.obj("message" -> e.getMessage))
+        }
     }
   }
 }
