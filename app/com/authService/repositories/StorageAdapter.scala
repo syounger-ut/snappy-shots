@@ -25,6 +25,11 @@ trait IStorageAdapter {
     fileName: String,
     file: File
   ): PutObjectResult
+
+  def deleteObject(
+    bucketName: String,
+    fileName: String
+  ): Unit
 }
 
 trait IClientBuilder {
@@ -62,6 +67,9 @@ class StorageAdapter extends IStorageAdapter {
 
     client.putObject(request)
   }
+
+  def deleteObject(bucketName: String, fileName: String): Unit =
+    client.deleteObject(bucketName, fileName)
 
   private def client = new ClientBuilder(AmazonS3ClientBuilder.standard()).build
 
