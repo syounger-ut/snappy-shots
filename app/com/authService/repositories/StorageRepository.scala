@@ -36,4 +36,16 @@ class StorageRepository @Inject() (storageAdapter: StorageAdapter) {
       case true  => throw new IllegalStateException("File already exists")
     }
   }
+
+  /* Delete a file from a bucket
+   * @param bucketName: String
+   * @param fileName: String
+   * @return Unit
+   */
+  def deleteObject(bucketName: String, fileName: String): Future[Unit] = {
+    Future.fromTry(Try(storageAdapter.objectExists(bucketName, fileName))).map {
+      case true  => storageAdapter.deleteObject(bucketName, fileName)
+      case false => throw new IllegalStateException("File does not exist")
+    }
+  }
 }

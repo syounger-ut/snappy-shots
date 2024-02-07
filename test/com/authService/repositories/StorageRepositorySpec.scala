@@ -4,11 +4,18 @@ import com.amazonaws.services.s3.model.{Bucket, PutObjectResult}
 import com.authService.{AsyncUnitSpec, UnitSpec}
 
 import java.io.File
+import scala.concurrent.Future
 
 class StorageRepositorySpec extends AsyncUnitSpec {
   val mockStorageAdapter: StorageAdapter = mock[StorageAdapter]
   val repository = new StorageRepository(mockStorageAdapter)
   val bucketName = "mock-bucket-name"
+
+  def mockObjectExists(returns: Boolean): Unit = {
+    (mockStorageAdapter.objectExists _)
+      .expects(bucketName, *)
+      .returning(returns)
+  }
 
   describe("#createBucket") {
     def mockBucketExists(returns: Boolean) = {
@@ -75,12 +82,6 @@ class StorageRepositorySpec extends AsyncUnitSpec {
         .returning(result)
     }
 
-    def mockObjectExists(returns: Boolean): Unit = {
-      (mockStorageAdapter.objectExists _)
-        .expects(bucketName, *)
-        .returning(returns)
-    }
-
     describe("when the file already exists in the bucket") {
       it("should fail to upload the file") {
         mockObjectExists(true)
@@ -126,6 +127,54 @@ class StorageRepositorySpec extends AsyncUnitSpec {
 
           result.map { result =>
             assert(result.isFailure)
+          }
+        }
+      }
+    }
+  }
+
+  describe("#deleteObject") {
+    def mockDeleteObject(fileName: String): Unit = {
+      (mockStorageAdapter.deleteObject _)
+        .expects(bucketName, fileName)
+        .returning(())
+    }
+
+    describe("when the file does not exist in the bucket") {
+      it("should fail to delete the file") {
+        mockObjectExists(false)
+
+        recoverToSucceededIf[IllegalStateException] {
+          repository.deleteObject(bucketName, "test.txt")
+        }.recover { case e: Throwable =>
+          assert(e.getMessage == "File does not exist")
+        }
+      }
+    }
+
+    describe("when the file exists in the bucket") {
+      describe("when the delete operation succeeds") {
+        it("should delete the file") {
+          mockObjectExists(true)
+          mockDeleteObject("test.txt")
+
+          val result = repository.deleteObject(bucketName, "test.txt")
+          result.map { result =>
+            assert(result == ())
+          }
+        }
+      }
+
+      describe("when the delete operation fails") {
+        it("should fail to delete the file") {
+          mockObjectExists(true)
+          (mockStorageAdapter.deleteObject _)
+            .expects(bucketName, "test.txt")
+            .returning(Future.failed(new RuntimeException("Delete failed")))
+
+          val result = repository.deleteObject(bucketName, "test.txt")
+          result.map { result =>
+            assert(result == ())
           }
         }
       }
