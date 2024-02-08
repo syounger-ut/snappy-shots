@@ -12,6 +12,8 @@ import com.amazonaws.services.s3.model.{
 }
 
 import java.io.File
+import java.net.URL
+import java.util.Date
 
 trait IStorageAdapter {
   def bucketExists(bucketName: String): Boolean
@@ -19,6 +21,8 @@ trait IStorageAdapter {
   def createBucket(bucketName: String): Bucket
 
   def objectExists(bucketName: String, fileName: String): Boolean
+
+  def preSignedUrl(bucketName: String, fileName: String, date: Date): URL
 
   def uploadObject(
     bucketName: String,
@@ -53,6 +57,12 @@ class StorageAdapter extends IStorageAdapter {
 
   def objectExists(bucketName: String, fileName: String): Boolean =
     client.doesObjectExist(bucketName, fileName)
+
+  def preSignedUrl(
+    bucketName: String,
+    fileName: String,
+    expiration: Date
+  ): URL = client.generatePresignedUrl(bucketName, fileName, expiration)
 
   def uploadObject(
     bucketName: String,
