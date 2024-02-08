@@ -233,9 +233,7 @@ class PhotosControllerSpec extends UnitSpec {
       title = "Updated title",
       description = Some("A beautiful photo scenery"),
       source = Some("https://www.example.com/my-photo.jpg"),
-      creator_id = mockUserId,
-      created_at = None,
-      updated_at = None
+      creator_id = mockUserId
     )
 
     val mockPhotoUpdateResponse = mockPhotoUpdate.copy(

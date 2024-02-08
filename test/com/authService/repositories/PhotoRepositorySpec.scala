@@ -17,8 +17,6 @@ class PhotoRepositorySpec extends DbUnitSpec {
     id = 0,
     title = "My wonderful photo",
     creator_id = mockUserId,
-    description = None,
-    source = None,
     created_at = Some(Instant.now()),
     updated_at = Some(Instant.now())
   )

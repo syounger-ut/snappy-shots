@@ -8,11 +8,11 @@ import java.time.Instant
 case class Photo(
   id: Long,
   title: String,
-  description: Option[String],
-  source: Option[String],
+  description: Option[String] = None,
+  source: Option[String] = None,
   creator_id: Long,
-  created_at: Option[Instant],
-  updated_at: Option[Instant]
+  created_at: Option[Instant] = None,
+  updated_at: Option[Instant] = None
 )
 
 object Photo {
