@@ -4,11 +4,15 @@ import com.amazonaws.services.s3.model.{Bucket, PutObjectResult}
 import com.google.inject.Inject
 
 import java.io.File
+import java.net.URL
+import java.util.Date
 import scala.concurrent.Future
 import scala.util.Try
 
 class StorageRepository @Inject() (storageAdapter: StorageAdapter) {
   import scala.concurrent.ExecutionContext.Implicits.global
+
+  private val DURATION_30_MINUTES = 60 * 60 * 30
 
   /* Create a new bucket
    * @param bucketName: String
@@ -18,6 +22,19 @@ class StorageRepository @Inject() (storageAdapter: StorageAdapter) {
     Try(storageAdapter.bucketExists(bucketName)).map {
       case false => storageAdapter.createBucket(bucketName)
       case true  => throw new IllegalStateException("Bucket already exists")
+    }
+  }
+
+  /* Get a pre-signed URL for a file
+   * @param bucketName: String
+   * @param fileName: String
+   * @return URL
+   */
+  def preSignedUrl(bucketName: String, fileName: String): Future[URL] = {
+    Future.fromTry(Try(storageAdapter.objectExists(bucketName, fileName))).map {
+      case true =>
+        storageAdapter.preSignedUrl(bucketName, fileName, urlExpiration)
+      case false => throw new IllegalStateException("File does not exist")
     }
   }
 
@@ -47,5 +64,14 @@ class StorageRepository @Inject() (storageAdapter: StorageAdapter) {
       case true  => storageAdapter.deleteObject(bucketName, fileName)
       case false => throw new IllegalStateException("File does not exist")
     }
+  }
+
+  private def urlExpiration: Date = {
+    val expiration = new Date
+    var expTimeMillis = expiration.getTime
+    expTimeMillis += DURATION_30_MINUTES
+    expiration.setTime(expTimeMillis)
+
+    expiration
   }
 }
