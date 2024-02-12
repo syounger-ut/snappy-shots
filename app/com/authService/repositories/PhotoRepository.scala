@@ -42,7 +42,19 @@ class PhotoRepository @Inject() (
       .filter(_.creator_id === userId)
       .result
 
-    db.run(query).map(_.toList)
+    for {
+      photos <- db.run(query).map(_.toList)
+      photosWithSources <- Future.sequence(
+        photos.map(photo =>
+          storageRepository
+            .preSignedUrl("snappy-shots", photo.title)
+            .map(pre_signed_url =>
+              photo.copy(source = Some(pre_signed_url.toString))
+            )
+            .recover(_ => photo)
+        )
+      )
+    } yield photosWithSources
   }
 
   def get(id: Long, userId: Long): Future[Option[Photo]] = {

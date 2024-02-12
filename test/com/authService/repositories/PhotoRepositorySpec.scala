@@ -34,6 +34,13 @@ class PhotoRepositorySpec extends DbUnitSpec {
   val createThirdPhotoAction =
     sqlu"""INSERT INTO photos (id, title, creator_id) VALUES(3, 'My great photo', ${mockUserIdTwo})"""
 
+  def mockPresignUrl(returnValue: Option[URL], callCount: Int): Unit = {
+    (mockStorageRepository.preSignedUrl _)
+      .expects(*, *)
+      .returning(Future(returnValue.get))
+      .repeated(callCount)
+  }
+
   describe("#create") {
     describe("on success") {
       it("should create a photo") {
@@ -71,12 +78,6 @@ class PhotoRepositorySpec extends DbUnitSpec {
   describe("#get") {
     val mockUrl = new URL("https://example.com")
 
-    def mockPresignUrl(returnValue: Option[URL]): Unit = {
-      (mockStorageRepository.preSignedUrl _)
-        .expects(*, *)
-        .returning(Future(returnValue.get))
-    }
-
     def subject(photoId: Int): Future[Option[Photo]] = {
       for {
         _ <- db.run(createUserAction.transactionally)
@@ -88,7 +89,7 @@ class PhotoRepositorySpec extends DbUnitSpec {
     }
 
     it("should return a photo") {
-      mockPresignUrl(None)
+      mockPresignUrl(None, 1)
 
       subject(1).map {
         case Some(_) => succeed
@@ -97,7 +98,7 @@ class PhotoRepositorySpec extends DbUnitSpec {
     }
 
     it("should add the pre-signed url to the source attribute") {
-      mockPresignUrl(Some(mockUrl))
+      mockPresignUrl(Some(mockUrl), 1)
 
       subject(1).map {
         case Some(photo) => {
@@ -116,21 +117,55 @@ class PhotoRepositorySpec extends DbUnitSpec {
   }
 
   describe("#list") {
+    val mockUrl = new URL("https://example.com")
+
+    def subject(photoId: Int): Future[List[Photo]] = {
+      for {
+        _ <- db.run(createUserAction.transactionally)
+        _ <- db.run(createSecondUserAction.transactionally)
+        _ <- db.run(createPhotoAction.transactionally)
+        _ <- db.run(createSecondPhotoAction.transactionally)
+        _ <- db.run(createThirdPhotoAction.transactionally)
+        photos <- repository.list(mockUserId)
+      } yield photos
+    }
+
     describe("when photos are found") {
       it("should return a list of photos") {
-        for {
-          _ <- db.run(createUserAction.transactionally)
-          _ <- db.run(createSecondUserAction.transactionally)
-          _ <- db.run(createPhotoAction.transactionally)
-          _ <- db.run(createSecondPhotoAction.transactionally)
-          _ <- db.run(createThirdPhotoAction.transactionally)
-          photo <- repository.list(mockUserId)
-        } yield photo match {
+        mockPresignUrl(None, 2)
+
+        subject(1).map {
           case (photos: List[_]) => {
             assert(photos.length == 2)
             assert(photos.head.creator_id == mockUserId)
           }
           case _ => fail("Photos not found")
+        }
+      }
+
+      describe("when the photos have a source") {
+        it("should add the pre-signed url to the source attribute") {
+          mockPresignUrl(Some(mockUrl), 2)
+
+          subject(1).map {
+            case (photos: List[_]) => {
+              assert(photos.head.source.contains(mockUrl.toString))
+            }
+            case _ => fail("Photos not found")
+          }
+        }
+      }
+
+      describe("when the photos do not have a source") {
+        it("should not add the pre-signed url to the source attribute") {
+          mockPresignUrl(None, 2)
+
+          subject(1).map {
+            case (photos: List[_]) => {
+              assert(photos.head.source.isEmpty)
+            }
+            case _ => fail("Photos not found")
+          }
         }
       }
     }
