@@ -5,10 +5,15 @@ import com.authService.utils.{Connection, Profile, SlickDBDriver}
 import com.google.inject.Inject
 import slick.jdbc.JdbcProfile
 
+import java.net.URL
+import java.time.Instant
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
 class PhotoRepository @Inject() (
+  val storageRepository: StorageRepository = new StorageRepository(
+    new StorageAdapter
+  ),
   override val profile: JdbcProfile = SlickDBDriver.getDriver
 ) extends PhotosTable
   with Profile {
@@ -48,7 +53,21 @@ class PhotoRepository @Inject() (
       )
       .result
       .headOption
-    db.run(query)
+
+    for {
+      photo <- db.run(query)
+      pre_signed_url <- photo match {
+        case Some(photo) =>
+          storageRepository
+            .preSignedUrl("snappy-shots", photo.title)
+            .recover(_ => None)
+        case None => Future(None)
+      }
+    } yield (photo, pre_signed_url) match {
+      case (Some(photo), pre_signed_url) =>
+        Some(photo.copy(source = Some(pre_signed_url.toString)))
+      case (None, _) => None
+    }
   }
 
   def update(

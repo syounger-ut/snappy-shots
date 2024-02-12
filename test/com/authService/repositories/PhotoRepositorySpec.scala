@@ -3,11 +3,13 @@ package com.authService.repositories
 import com.authService.DbUnitSpec
 import com.authService.models.Photo
 
+import java.net.URL
 import java.time.Instant
 import scala.concurrent.Future
 
 class PhotoRepositorySpec extends DbUnitSpec {
-  val repository = new PhotoRepository
+  val mockStorageRepository: StorageRepository = mock[StorageRepository]
+  val repository = new PhotoRepository(mockStorageRepository)
 
   import profile.api._
 
@@ -67,25 +69,46 @@ class PhotoRepositorySpec extends DbUnitSpec {
   }
 
   describe("#get") {
-    it("should return a photo") {
-      for {
-        _ <- db.run(createUserAction.transactionally)
-        _ <- db.run(createPhotoAction.transactionally)
-        photo <- repository.get(1, 1)
-      } yield photo match {
-        case Some(_) => succeed
-        case None    => fail("Photo should be found")
-      }
+    val mockUrl = new URL("https://example.com")
+
+    def mockPresignUrl(returnValue: Option[URL]): Unit = {
+      (mockStorageRepository.preSignedUrl _)
+        .expects(*, *)
+        .returning(Future(returnValue.get))
     }
 
-    it("should not return another users photo") {
+    def subject(photoId: Int): Future[Option[Photo]] = {
       for {
         _ <- db.run(createUserAction.transactionally)
         _ <- db.run(createSecondUserAction.transactionally)
         _ <- db.run(createPhotoAction.transactionally)
         _ <- db.run(createThirdPhotoAction.transactionally)
-        photo <- repository.get(2, 1)
-      } yield photo match {
+        photo <- repository.get(photoId, 1)
+      } yield photo
+    }
+
+    it("should return a photo") {
+      mockPresignUrl(None)
+
+      subject(1).map {
+        case Some(_) => succeed
+        case None    => fail("Photo should be found")
+      }
+    }
+
+    it("should add the pre-signed url to the source attribute") {
+      mockPresignUrl(Some(mockUrl))
+
+      subject(1).map {
+        case Some(photo) => {
+          assert(photo.source.contains(mockUrl.toString))
+        }
+        case None => fail("Photo should be found")
+      }
+    }
+
+    it("should not return another users photo") {
+      subject(2).map {
         case Some(_) => fail("Photo should not be found")
         case None    => succeed
       }

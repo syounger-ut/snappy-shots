@@ -1,5 +1,9 @@
-import com.authService.repositories.UserRepository
-import com.authService.repositories.PhotoRepository
+import com.authService.repositories.{
+  PhotoRepository,
+  StorageAdapter,
+  StorageRepository,
+  UserRepository
+}
 import com.google.inject.{AbstractModule, Provides}
 
 import javax.inject.Singleton
@@ -11,6 +15,11 @@ class SnappyShotsModule extends AbstractModule {
   def providesUserRepository(): UserRepository = new UserRepository
   @Provides @Singleton
   def providesPhotoRepository(): PhotoRepository = new PhotoRepository
+
+  @Provides @Singleton
+  def providesStorageRepository(): StorageRepository = new StorageRepository(
+    new StorageAdapter
+  )
 }
 
 // $COVERAGE-ON$
