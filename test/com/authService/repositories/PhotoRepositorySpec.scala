@@ -28,7 +28,9 @@ class PhotoRepositorySpec extends DbUnitSpec {
   val createPhotoAction =
     sqlu"""INSERT INTO photos (id, title, creator_id) VALUES(1, 'My great photo', ${mockUserId})"""
   val createSecondPhotoAction =
-    sqlu"""INSERT INTO photos (id, title, creator_id) VALUES(2, 'My great photo', ${mockUserIdTwo})"""
+    sqlu"""INSERT INTO photos (id, title, creator_id) VALUES(2, 'My great photo', ${mockUserId})"""
+  val createThirdPhotoAction =
+    sqlu"""INSERT INTO photos (id, title, creator_id) VALUES(3, 'My great photo', ${mockUserIdTwo})"""
 
   describe("#create") {
     describe("on success") {
@@ -81,7 +83,7 @@ class PhotoRepositorySpec extends DbUnitSpec {
         _ <- db.run(createUserAction.transactionally)
         _ <- db.run(createSecondUserAction.transactionally)
         _ <- db.run(createPhotoAction.transactionally)
-        _ <- db.run(createSecondPhotoAction.transactionally)
+        _ <- db.run(createThirdPhotoAction.transactionally)
         photo <- repository.get(2, 1)
       } yield photo match {
         case Some(_) => fail("Photo should not be found")
@@ -98,13 +100,14 @@ class PhotoRepositorySpec extends DbUnitSpec {
           _ <- db.run(createSecondUserAction.transactionally)
           _ <- db.run(createPhotoAction.transactionally)
           _ <- db.run(createSecondPhotoAction.transactionally)
+          _ <- db.run(createThirdPhotoAction.transactionally)
           photo <- repository.list(mockUserId)
         } yield photo match {
-          case List(_) => {
-            assert(photo.length == 1)
-            assert(photo.head.creator_id == mockUserId)
+          case (photos: List[_]) => {
+            assert(photos.length == 2)
+            assert(photos.head.creator_id == mockUserId)
           }
-          case List() => fail("Photos not found")
+          case _ => fail("Photos not found")
         }
       }
     }

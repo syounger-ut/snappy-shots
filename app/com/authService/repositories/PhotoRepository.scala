@@ -37,10 +37,7 @@ class PhotoRepository @Inject() (
       .filter(_.creator_id === userId)
       .result
 
-    db.run(query).map(_.headOption).map {
-      case Some(photo) => List(photo)
-      case None        => List()
-    }
+    db.run(query).map(_.toList)
   }
 
   def get(id: Long, userId: Long): Future[Option[Photo]] = {
