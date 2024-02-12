@@ -51,6 +51,8 @@ class PhotoRepositorySpec extends DbUnitSpec {
           case photo =>
             assert(photo.id == 1)
             assert(photo.title == mockPhoto.title)
+            assert(photo.created_at.isDefined)
+            assert(photo.updated_at.isDefined)
         }
       }
     }
@@ -213,6 +215,7 @@ class PhotoRepositorySpec extends DbUnitSpec {
           } yield photo match {
             case Some(photo) =>
               assert(photo.description.contains("New description"))
+              assert(photo.updated_at.isDefined)
             case None => fail("Photo not found")
           }
         }

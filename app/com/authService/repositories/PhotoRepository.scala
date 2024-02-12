@@ -24,11 +24,13 @@ class PhotoRepository @Inject() (
   val db = new Connection(profile).db()
 
   def create(photo: Photo): Future[Photo] = {
+    val createdAt = Some(Instant.now())
+    val createPhoto = photo.copy(created_at = createdAt, updated_at = createdAt)
     val insertQuery =
       photos returning photos.map(_.id) into ((photo, id) =>
         photo.copy(id = id)
       )
-    val action = insertQuery += photo
+    val action = insertQuery += createPhoto
 
     db.run(action.asTry).map {
       case Success(photo: Photo) => photo
@@ -87,12 +89,28 @@ class PhotoRepository @Inject() (
     userId: Long,
     photo: Photo
   ): Future[Option[Photo]] = {
+    val photoToUpdate = photo.copy(updated_at = Some(Instant.now()))
+
     val action = photos
       .filter(table => table.id === photoId && table.creator_id === userId)
       .map(photo =>
-        (photo.title, photo.description, photo.source, photo.creator_id)
+        (
+          photo.title,
+          photo.description,
+          photo.source,
+          photo.creator_id,
+          photo.updated_at
+        )
       )
-      .update((photo.title, photo.description, photo.source, photo.creator_id))
+      .update(
+        (
+          photoToUpdate.title,
+          photoToUpdate.description,
+          photoToUpdate.source,
+          photoToUpdate.creator_id,
+          photoToUpdate.updated_at
+        )
+      )
 
     db.run(action.asTry).map {
       case Success(1) => Some(photo)
