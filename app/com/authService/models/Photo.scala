@@ -10,6 +10,7 @@ case class Photo(
   title: String,
   description: Option[String] = None,
   source: Option[String] = None,
+  fileName: Option[String] = None,
   creator_id: Long,
   created_at: Option[Instant] = None,
   updated_at: Option[Instant] = None
@@ -27,6 +28,7 @@ trait PhotosTable { this: Profile =>
     def title = column[String]("title")
     def description = column[Option[String]]("description")
     def source = column[Option[String]]("source")
+    def fileName: Rep[Option[String]] = column[Option[String]]("file_name")
     def creator_id = column[Long]("creator_id")
     def created_at = column[Option[Instant]]("created_at")
     def updated_at = column[Option[Instant]]("updated_at")
@@ -36,6 +38,7 @@ trait PhotosTable { this: Profile =>
       title,
       description,
       source,
+      fileName,
       creator_id,
       created_at,
       updated_at

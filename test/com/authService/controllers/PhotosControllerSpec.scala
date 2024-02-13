@@ -42,13 +42,13 @@ class PhotosControllerSpec extends UnitSpec {
   val mockDateTime: Instant = Instant.now()
   val mockPhoto: Option[Photo] = Some(
     Photo(
-      mockPhotoId,
-      "My wonderful photo",
-      Some("A beautiful photo scenery"),
-      Some("https://www.example.com/my-photo.jpg"),
-      mockUserId,
-      Some(mockDateTime),
-      Some(mockDateTime)
+      id = mockPhotoId,
+      title = "My wonderful photo",
+      description = Some("A beautiful photo scenery"),
+      source = Some("https://www.example.com/my-photo.jpg"),
+      creator_id = mockUserId,
+      created_at = Some(mockDateTime),
+      updated_at = Some(mockDateTime)
     )
   )
 
