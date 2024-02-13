@@ -99,6 +99,7 @@ class PhotoRepository @Inject() (
           photo.title,
           photo.description,
           photo.source,
+          photo.fileName,
           photo.creatorId,
           photo.updatedAt
         )
@@ -108,6 +109,7 @@ class PhotoRepository @Inject() (
           photoToUpdate.title,
           photoToUpdate.description,
           photoToUpdate.source,
+          photoToUpdate.fileName,
           photoToUpdate.creatorId,
           photoToUpdate.updatedAt
         )
@@ -135,8 +137,8 @@ class PhotoRepository @Inject() (
   ): Future[Try[PutObjectResult]] = {
     get(photoId, userId)
       .flatMap {
-        case Some(_) => uploadToStorage(photoId, userId, fileName, file)
-        case None    => throw new IllegalStateException("Photo does not exist")
+        case Some(photo) => uploadToStorage(photo, userId, fileName, file)
+        case None => throw new IllegalStateException("Photo does not exist")
       }
   }
 
@@ -148,15 +150,28 @@ class PhotoRepository @Inject() (
   }
 
   private def uploadToStorage(
-    photoId: Int,
+    photo: Photo,
     userId: Long,
     fileName: String,
     file: File
   ): Future[Try[PutObjectResult]] = {
     val fileExtension = fileName.split('.').last
-    val fileNameUpdate = s"$userId/$fileExtension/$photoId.$fileExtension"
+    val fileNameUpdate = s"$userId/$fileExtension/${photo.id}.$fileExtension"
     val bucketName = "snappy-shots"
 
-    storageRepository.uploadObject(bucketName, fileNameUpdate, file)
+    storageRepository
+      .uploadObject(bucketName, fileNameUpdate, file)
+      .flatMap {
+        case Success(result) =>
+          update(photo.id, userId, photo.copy(fileName = Some(fileNameUpdate)))
+            .flatMap {
+              case Some(p) => Future(Success(result))
+              case None =>
+                Future.failed(
+                  new IllegalStateException("Failed to update photo")
+                )
+            }
+        case Failure(exception) => Future.failed(exception)
+      }
   }
 }

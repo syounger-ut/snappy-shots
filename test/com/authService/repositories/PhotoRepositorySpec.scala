@@ -271,7 +271,7 @@ class PhotoRepositorySpec extends DbUnitSpec {
           photoId,
           1,
           "file.jpg",
-          new File("test/resources/test.jpg")
+          new File("test.jpg")
         )
       } yield result
     }
@@ -285,12 +285,27 @@ class PhotoRepositorySpec extends DbUnitSpec {
     }
 
     describe("when the photo exists") {
+      val session = db.createSession()
+
       it("should upload the file to the storage") {
         mockPresignUrl(None, 1)
         mockUploadObject()
 
         subject(1).map { result =>
           assert(result.isSuccess)
+        }
+      }
+
+      it("should update the db photo with a filePath") {
+        mockPresignUrl(None, 1)
+        mockUploadObject()
+
+        subject(1).map { _ =>
+          val result = session
+            .createStatement()
+            .executeQuery("SELECT * FROM photos WHERE id = 1");
+          assert(result.next())
+          assert(result.getString("file_name") == "1/jpg/1.jpg")
         }
       }
     }
