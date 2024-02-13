@@ -25,29 +25,6 @@ class StorageController @Inject() (
   extends AbstractController(cc) {
   val BUCKET_NAME = "snappy-shots"
 
-  def upload: Action[MultipartFormData[Files.TemporaryFile]] = {
-    authAction.async(parse.multipartFormData) { request =>
-      request.body.file("file") match {
-        case Some(file) =>
-          storageRepository
-            .uploadObject(
-              BUCKET_NAME,
-              file.filename,
-              file.ref.path.toFile
-            )
-            .map {
-              case Success(_) => Ok(Json.obj("message" -> "File uploaded"))
-              case Failure(e) => BadRequest(Json.obj("message" -> e.getMessage))
-            }
-            .recover { case e: Throwable =>
-              BadRequest(Json.obj("message" -> e.getMessage))
-            }
-        case None =>
-          Future.successful(BadRequest(Json.obj("message" -> "No file found")))
-      }
-    }
-  }
-
   def delete(fileName: String): Action[AnyContent] = {
     authAction.async { request =>
       storageRepository

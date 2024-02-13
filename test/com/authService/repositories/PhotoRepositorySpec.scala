@@ -1,11 +1,14 @@
 package com.authService.repositories
 
+import com.amazonaws.services.s3.model.PutObjectResult
 import com.authService.DbUnitSpec
 import com.authService.models.Photo
 
+import java.io.File
 import java.net.URL
 import java.time.Instant
 import scala.concurrent.Future
+import scala.util.{Success, Try}
 
 class PhotoRepositorySpec extends DbUnitSpec {
   val mockStorageRepository: StorageRepository = mock[StorageRepository]
@@ -246,6 +249,48 @@ class PhotoRepositorySpec extends DbUnitSpec {
               assert(photo.description.contains("New description"))
             case None => fail("Photo not found")
           }
+        }
+      }
+    }
+  }
+
+  describe("#uploadObject") {
+    val mockUploadResult = new PutObjectResult()
+
+    def mockUploadObject(): Unit = {
+      (mockStorageRepository.uploadObject _)
+        .expects(*, *, *)
+        .returning(Future(Success(mockUploadResult)))
+    }
+
+    def subject(photoId: Int): Future[Try[PutObjectResult]] = {
+      for {
+        _ <- db.run(createUserAction.transactionally)
+        _ <- db.run(createPhotoAction.transactionally)
+        result <- repository.uploadObject(
+          photoId,
+          1,
+          "file.jpg",
+          new File("test/resources/test.jpg")
+        )
+      } yield result
+    }
+
+    describe("when the photo does not exists") {
+      it("should raise an exception") {
+        recoverToExceptionIf[IllegalStateException](subject(2)).map { result =>
+          result.getMessage should include("Photo does not exist")
+        }
+      }
+    }
+
+    describe("when the photo exists") {
+      it("should upload the file to the storage") {
+        mockPresignUrl(None, 1)
+        mockUploadObject()
+
+        subject(1).map { result =>
+          assert(result.isSuccess)
         }
       }
     }

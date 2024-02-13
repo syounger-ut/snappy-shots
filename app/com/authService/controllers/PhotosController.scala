@@ -3,12 +3,13 @@ package com.authService.controllers
 import com.authService.auth.AuthAction
 import com.authService.models.Photo
 import com.authService.repositories._
+import play.api.libs.Files
 import play.api.libs.json._
 import play.api.mvc._
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Success, Try}
+import scala.util.{Failure, Success, Try}
 
 @Singleton
 class PhotosController @Inject() (
@@ -86,6 +87,37 @@ class PhotosController @Inject() (
           }
         case None => Future(BadRequest)
       }
+  }
+
+  /*
+   * Upload a photo object
+   * @param photoId The identifier of the photo to upload the object to
+   * @return The photo upload state
+   */
+  def uploadPhotoObject(
+    photoId: Int
+  ): Action[MultipartFormData[Files.TemporaryFile]] = {
+    authAction.async(parse.multipartFormData) { request =>
+      request.body.file("file") match {
+        case Some(file) =>
+          photosRepository
+            .uploadObject(
+              photoId,
+              request.userId,
+              file.filename,
+              file.ref.path.toFile
+            )
+            .map {
+              case Success(_) => Ok(Json.obj("message" -> "File uploaded"))
+              case Failure(e) => BadRequest(Json.obj("message" -> e.getMessage))
+            }
+            .recover { case e: Throwable =>
+              BadRequest(Json.obj("message" -> e.getMessage))
+            }
+        case None =>
+          Future.successful(BadRequest(Json.obj("message" -> "No file found")))
+      }
+    }
   }
 
   /*

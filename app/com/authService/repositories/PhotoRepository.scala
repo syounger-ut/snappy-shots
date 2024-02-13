@@ -1,14 +1,15 @@
 package com.authService.repositories
 
+import com.amazonaws.services.s3.model.PutObjectResult
 import com.authService.models._
 import com.authService.utils.{Connection, Profile, SlickDBDriver}
 import com.google.inject.Inject
 import slick.jdbc.JdbcProfile
 
-import java.net.URL
+import java.io.File
 import java.time.Instant
 import scala.concurrent.Future
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
 class PhotoRepository @Inject() (
   val storageRepository: StorageRepository = new StorageRepository(
@@ -120,10 +121,42 @@ class PhotoRepository @Inject() (
     }
   }
 
+  /* Upload a file to a bucket
+   * @param photoId: Int
+   * @param file: File
+   * @param userId: Long
+   * @return Future[Try[PutObjectResult]]
+   */
+  def uploadObject(
+    photoId: Int,
+    userId: Long,
+    fileName: String,
+    file: File
+  ): Future[Try[PutObjectResult]] = {
+    get(photoId, userId)
+      .flatMap {
+        case Some(_) => uploadToStorage(photoId, userId, fileName, file)
+        case None    => throw new IllegalStateException("Photo does not exist")
+      }
+  }
+
   def delete(id: Long, userId: Long): Future[Int] = {
     val action = photos
       .filter(table => table.id === id && table.creator_id === userId)
       .delete
     db.run(action)
+  }
+
+  private def uploadToStorage(
+    photoId: Int,
+    userId: Long,
+    fileName: String,
+    file: File
+  ): Future[Try[PutObjectResult]] = {
+    val fileExtension = fileName.split('.').last
+    val fileNameUpdate = s"$userId/$fileExtension/$photoId.$fileExtension"
+    val bucketName = "snappy-shots"
+
+    storageRepository.uploadObject(bucketName, fileNameUpdate, file)
   }
 }
