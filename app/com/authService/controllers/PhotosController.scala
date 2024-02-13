@@ -139,7 +139,7 @@ class PhotosController @Inject() (
       title = (json \ "title").as[String],
       description = (json \ "description").asOpt[String],
       source = (json \ "source").asOpt[String],
-      creator_id = creatorId
+      creatorId = creatorId
     )
   }
 }

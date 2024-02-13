@@ -21,9 +21,9 @@ class PhotoRepositorySpec extends DbUnitSpec {
   val mockPhoto: Photo = Photo(
     id = 0,
     title = "My wonderful photo",
-    creator_id = mockUserId,
-    created_at = Some(Instant.now()),
-    updated_at = Some(Instant.now())
+    creatorId = mockUserId,
+    createdAt = Some(Instant.now()),
+    updatedAt = Some(Instant.now())
   )
 
   val createUserAction =
@@ -54,8 +54,8 @@ class PhotoRepositorySpec extends DbUnitSpec {
           case photo =>
             assert(photo.id == 1)
             assert(photo.title == mockPhoto.title)
-            assert(photo.created_at.isDefined)
-            assert(photo.updated_at.isDefined)
+            assert(photo.createdAt.isDefined)
+            assert(photo.updatedAt.isDefined)
         }
       }
     }
@@ -142,7 +142,7 @@ class PhotoRepositorySpec extends DbUnitSpec {
         subject(1).map {
           case (photos: List[_]) => {
             assert(photos.length == 2)
-            assert(photos.head.creator_id == mockUserId)
+            assert(photos.head.creatorId == mockUserId)
           }
           case _ => fail("Photos not found")
         }
@@ -202,7 +202,7 @@ class PhotoRepositorySpec extends DbUnitSpec {
           mockPhoto.copy(
             id = photoId,
             description = Some("New description"),
-            creator_id = 1
+            creatorId = 1
           )
         )
       } yield photo
@@ -218,7 +218,7 @@ class PhotoRepositorySpec extends DbUnitSpec {
           } yield photo match {
             case Some(photo) =>
               assert(photo.description.contains("New description"))
-              assert(photo.updated_at.isDefined)
+              assert(photo.updatedAt.isDefined)
             case None => fail("Photo not found")
           }
         }

@@ -46,9 +46,9 @@ class PhotosControllerSpec extends UnitSpec {
       title = "My wonderful photo",
       description = Some("A beautiful photo scenery"),
       source = Some("https://www.example.com/my-photo.jpg"),
-      creator_id = mockUserId,
-      created_at = Some(mockDateTime),
-      updated_at = Some(mockDateTime)
+      creatorId = mockUserId,
+      createdAt = Some(mockDateTime),
+      updatedAt = Some(mockDateTime)
     )
   )
 
@@ -100,14 +100,14 @@ class PhotosControllerSpec extends UnitSpec {
           "title":"My wonderful photo",
           "description":"A beautiful photo scenery",
           "source":"https://www.example.com/my-photo.jpg",
-          "creator_id":${mockUserId}
+          "creatorId":${mockUserId}
         }"""
 
         val response = setupResponse(Some(requestBody))
         val responseStatus = status(response)
         val bodyText: String = contentAsString(response)
         assert(responseStatus == CREATED)
-        bodyText contains s"{\"id\":${mockPhotoId},\"title\":\"My wonderful photo\",\"description\":\"A beautiful photo scenery\",\"source\":\"https://www.example.com/my-photo.jpg\",\"creator_id\":${mockUserId}}"
+        bodyText contains s"{\"id\":${mockPhotoId},\"title\":\"My wonderful photo\",\"description\":\"A beautiful photo scenery\",\"source\":\"https://www.example.com/my-photo.jpg\",\"creatorId\":${mockUserId}}"
       }
     }
 
@@ -169,7 +169,7 @@ class PhotosControllerSpec extends UnitSpec {
         val bodyText: String = contentAsString(response)
         assert(responseStatus == OK)
         assert(
-          bodyText == s"{\"photos\":[{\"id\":${mockPhotoId},\"title\":\"My wonderful photo\",\"description\":\"A beautiful photo scenery\",\"source\":\"https://www.example.com/my-photo.jpg\",\"creator_id\":${mockUserId},\"created_at\":\"${mockDateTime.toString}\",\"updated_at\":\"${mockDateTime.toString}\"}]}"
+          bodyText == s"{\"photos\":[{\"id\":${mockPhotoId},\"title\":\"My wonderful photo\",\"description\":\"A beautiful photo scenery\",\"source\":\"https://www.example.com/my-photo.jpg\",\"creatorId\":${mockUserId},\"createdAt\":\"${mockDateTime.toString}\",\"updatedAt\":\"${mockDateTime.toString}\"}]}"
         )
       }
     }
@@ -216,7 +216,7 @@ class PhotosControllerSpec extends UnitSpec {
         val bodyText: String = contentAsString(response)
         assert(responseStatus == OK)
         assert(
-          bodyText == s"{\"id\":${mockPhotoId},\"title\":\"My wonderful photo\",\"description\":\"A beautiful photo scenery\",\"source\":\"https://www.example.com/my-photo.jpg\",\"creator_id\":${mockUserId},\"created_at\":\"${mockDateTime.toString}\",\"updated_at\":\"${mockDateTime.toString}\"}"
+          bodyText == s"{\"id\":${mockPhotoId},\"title\":\"My wonderful photo\",\"description\":\"A beautiful photo scenery\",\"source\":\"https://www.example.com/my-photo.jpg\",\"creatorId\":${mockUserId},\"createdAt\":\"${mockDateTime.toString}\",\"updatedAt\":\"${mockDateTime.toString}\"}"
         )
       }
     }
@@ -238,12 +238,12 @@ class PhotosControllerSpec extends UnitSpec {
       title = "Updated title",
       description = Some("A beautiful photo scenery"),
       source = Some("https://www.example.com/my-photo.jpg"),
-      creator_id = mockUserId
+      creatorId = mockUserId
     )
 
     val mockPhotoUpdateResponse = mockPhotoUpdate.copy(
-      created_at = Some(mockDateTime),
-      updated_at = Some(mockDateTime)
+      createdAt = Some(mockDateTime),
+      updatedAt = Some(mockDateTime)
     )
 
     val requestBodyGood = s"""{
@@ -251,7 +251,7 @@ class PhotosControllerSpec extends UnitSpec {
       "title":"Updated title",
       "description":"A beautiful photo scenery",
       "source":"https://www.example.com/my-photo.jpg",
-      "creator_id":${mockUserId}
+      "creatorId":${mockUserId}
     }"""
     val requestBodyBad = s"""{
       "title":"Missing required fields"
@@ -323,7 +323,7 @@ class PhotosControllerSpec extends UnitSpec {
           val bodyText: String = contentAsString(response)
           assert(responseStatus == OK)
           assert(
-            bodyText == s"{\"id\":${mockPhotoId},\"title\":\"Updated title\",\"description\":\"A beautiful photo scenery\",\"source\":\"https://www.example.com/my-photo.jpg\",\"creator_id\":${mockUserId},\"created_at\":\"${mockDateTime.toString}\",\"updated_at\":\"${mockDateTime.toString}\"}"
+            bodyText == s"{\"id\":${mockPhotoId},\"title\":\"Updated title\",\"description\":\"A beautiful photo scenery\",\"source\":\"https://www.example.com/my-photo.jpg\",\"creatorId\":${mockUserId},\"createdAt\":\"${mockDateTime.toString}\",\"updatedAt\":\"${mockDateTime.toString}\"}"
           )
         }
       }

@@ -11,9 +11,9 @@ case class Photo(
   description: Option[String] = None,
   source: Option[String] = None,
   fileName: Option[String] = None,
-  creator_id: Long,
-  created_at: Option[Instant] = None,
-  updated_at: Option[Instant] = None
+  creatorId: Long,
+  createdAt: Option[Instant] = None,
+  updatedAt: Option[Instant] = None
 )
 
 object Photo {
@@ -29,9 +29,9 @@ trait PhotosTable { this: Profile =>
     def description = column[Option[String]]("description")
     def source = column[Option[String]]("source")
     def fileName: Rep[Option[String]] = column[Option[String]]("file_name")
-    def creator_id = column[Long]("creator_id")
-    def created_at = column[Option[Instant]]("created_at")
-    def updated_at = column[Option[Instant]]("updated_at")
+    def creatorId = column[Long]("creator_id")
+    def createdAt = column[Option[Instant]]("created_at")
+    def updatedAt = column[Option[Instant]]("updated_at")
 
     def * = (
       id,
@@ -39,9 +39,9 @@ trait PhotosTable { this: Profile =>
       description,
       source,
       fileName,
-      creator_id,
-      created_at,
-      updated_at
+      creatorId,
+      createdAt,
+      updatedAt
     ) <> ((Photo.apply _).tupled, Photo.unapply)
   }
 

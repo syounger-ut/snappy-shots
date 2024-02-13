@@ -26,7 +26,7 @@ class PhotoRepository @Inject() (
 
   def create(photo: Photo): Future[Photo] = {
     val createdAt = Some(Instant.now())
-    val createPhoto = photo.copy(created_at = createdAt, updated_at = createdAt)
+    val createPhoto = photo.copy(createdAt = createdAt, updatedAt = createdAt)
     val insertQuery =
       photos returning photos.map(_.id) into ((photo, id) =>
         photo.copy(id = id)
@@ -42,7 +42,7 @@ class PhotoRepository @Inject() (
 
   def list(userId: Long): Future[List[Photo]] = {
     val query = photos
-      .filter(_.creator_id === userId)
+      .filter(_.creatorId === userId)
       .result
 
     for {
@@ -64,7 +64,7 @@ class PhotoRepository @Inject() (
     val query = photos
       .filter(table =>
         table.id === id &&
-          table.creator_id === userId
+          table.creatorId === userId
       )
       .result
       .headOption
@@ -90,17 +90,17 @@ class PhotoRepository @Inject() (
     userId: Long,
     photo: Photo
   ): Future[Option[Photo]] = {
-    val photoToUpdate = photo.copy(updated_at = Some(Instant.now()))
+    val photoToUpdate = photo.copy(updatedAt = Some(Instant.now()))
 
     val action = photos
-      .filter(table => table.id === photoId && table.creator_id === userId)
+      .filter(table => table.id === photoId && table.creatorId === userId)
       .map(photo =>
         (
           photo.title,
           photo.description,
           photo.source,
-          photo.creator_id,
-          photo.updated_at
+          photo.creatorId,
+          photo.updatedAt
         )
       )
       .update(
@@ -108,8 +108,8 @@ class PhotoRepository @Inject() (
           photoToUpdate.title,
           photoToUpdate.description,
           photoToUpdate.source,
-          photoToUpdate.creator_id,
-          photoToUpdate.updated_at
+          photoToUpdate.creatorId,
+          photoToUpdate.updatedAt
         )
       )
 
@@ -142,7 +142,7 @@ class PhotoRepository @Inject() (
 
   def delete(id: Long, userId: Long): Future[Int] = {
     val action = photos
-      .filter(table => table.id === id && table.creator_id === userId)
+      .filter(table => table.id === id && table.creatorId === userId)
       .delete
     db.run(action)
   }
