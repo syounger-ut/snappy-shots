@@ -75,6 +75,36 @@ class StorageRepositorySpec extends AsyncUnitSpec {
     }
   }
 
+  describe("#preSignedUrl") {
+    def mockPreSignedUrl(returns: Boolean): Unit = {
+      (mockStorageAdapter.preSignedUrl _)
+        .expects(bucketName, "test.txt", *)
+        .returning(new java.net.URL("http://example.com"))
+    }
+
+    describe("when the file exists in the bucket") {
+      it("should return a pre-signed URL") {
+        mockObjectExists(true)
+        mockPreSignedUrl(true)
+
+        val url = repository.preSignedUrl(bucketName, "test.txt")
+        url.map { url =>
+          assert(url.toString == "http://example.com")
+        }
+      }
+    }
+
+    describe("when the file does not exist in the bucket") {
+      it("should fail to return a pre-signed URL") {
+        mockObjectExists(false)
+
+        recoverToSucceededIf[IllegalStateException] {
+          repository.preSignedUrl(bucketName, "test.txt")
+        }
+      }
+    }
+  }
+
   describe("#upload") {
     def mockUploadObject(file: File, result: PutObjectResult): Unit = {
       (mockStorageAdapter.uploadObject _)

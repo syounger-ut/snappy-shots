@@ -5,10 +5,15 @@ import com.authService.utils.{Connection, Profile, SlickDBDriver}
 import com.google.inject.Inject
 import slick.jdbc.JdbcProfile
 
+import java.net.URL
+import java.time.Instant
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
 class PhotoRepository @Inject() (
+  val storageRepository: StorageRepository = new StorageRepository(
+    new StorageAdapter
+  ),
   override val profile: JdbcProfile = SlickDBDriver.getDriver
 ) extends PhotosTable
   with Profile {
@@ -19,11 +24,13 @@ class PhotoRepository @Inject() (
   val db = new Connection(profile).db()
 
   def create(photo: Photo): Future[Photo] = {
+    val createdAt = Some(Instant.now())
+    val createPhoto = photo.copy(created_at = createdAt, updated_at = createdAt)
     val insertQuery =
       photos returning photos.map(_.id) into ((photo, id) =>
         photo.copy(id = id)
       )
-    val action = insertQuery += photo
+    val action = insertQuery += createPhoto
 
     db.run(action.asTry).map {
       case Success(photo: Photo) => photo
@@ -37,10 +44,19 @@ class PhotoRepository @Inject() (
       .filter(_.creator_id === userId)
       .result
 
-    db.run(query).map(_.headOption).map {
-      case Some(photo) => List(photo)
-      case None        => List()
-    }
+    for {
+      photos <- db.run(query).map(_.toList)
+      photosWithSources <- Future.sequence(
+        photos.map(photo =>
+          storageRepository
+            .preSignedUrl("snappy-shots", photo.title)
+            .map(pre_signed_url =>
+              photo.copy(source = Some(pre_signed_url.toString))
+            )
+            .recover(_ => photo)
+        )
+      )
+    } yield photosWithSources
   }
 
   def get(id: Long, userId: Long): Future[Option[Photo]] = {
@@ -51,7 +67,21 @@ class PhotoRepository @Inject() (
       )
       .result
       .headOption
-    db.run(query)
+
+    for {
+      photo <- db.run(query)
+      pre_signed_url <- photo match {
+        case Some(photo) =>
+          storageRepository
+            .preSignedUrl("snappy-shots", photo.title)
+            .recover(_ => None)
+        case None => Future(None)
+      }
+    } yield (photo, pre_signed_url) match {
+      case (Some(photo), pre_signed_url) =>
+        Some(photo.copy(source = Some(pre_signed_url.toString)))
+      case (None, _) => None
+    }
   }
 
   def update(
@@ -59,12 +89,28 @@ class PhotoRepository @Inject() (
     userId: Long,
     photo: Photo
   ): Future[Option[Photo]] = {
+    val photoToUpdate = photo.copy(updated_at = Some(Instant.now()))
+
     val action = photos
       .filter(table => table.id === photoId && table.creator_id === userId)
       .map(photo =>
-        (photo.title, photo.description, photo.source, photo.creator_id)
+        (
+          photo.title,
+          photo.description,
+          photo.source,
+          photo.creator_id,
+          photo.updated_at
+        )
       )
-      .update((photo.title, photo.description, photo.source, photo.creator_id))
+      .update(
+        (
+          photoToUpdate.title,
+          photoToUpdate.description,
+          photoToUpdate.source,
+          photoToUpdate.creator_id,
+          photoToUpdate.updated_at
+        )
+      )
 
     db.run(action.asTry).map {
       case Success(1) => Some(photo)

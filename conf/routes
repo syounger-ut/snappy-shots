@@ -11,8 +11,8 @@ PUT /api/photos/:photoId         com.authService.controllers.PhotosController.up
 DELETE /api/photos/:photoId      com.authService.controllers.PhotosController.deletePhoto(photoId: Int)
 
 # Storate routes
-+nocsrf
 POST /api/storage                com.authService.controllers.StorageController.upload()
+DELETE /api/storage/:fileName    com.authService.controllers.StorageController.delete(fileName: String)
 
 GET /auth/login                  com.authService.controllers.AuthenticationController.login()
-POST /auth/register             com.authService.controllers.AuthenticationController.register()
+POST /auth/register              com.authService.controllers.AuthenticationController.register()
