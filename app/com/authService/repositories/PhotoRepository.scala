@@ -163,15 +163,13 @@ class PhotoRepository @Inject() (
       case Some(photo) =>
         storageRepository
           .deleteObject("snappy-shots", photo.fileName.get)
-          .flatMap {
-            case () =>
-              update(photo.id, userId, photo.copy(fileName = None))
-                .flatMap {
-                  case Some(_) => Future.successful()
-                  case None =>
-                    throw new IllegalStateException("Failed to update photo")
-                }
-            case _ => throw new IllegalStateException("Failed to delete file")
+          .flatMap { case () =>
+            update(photo.id, userId, photo.copy(fileName = None))
+              .flatMap {
+                case Some(_) => Future.successful()
+                case None =>
+                  throw new IllegalStateException("Failed to update photo")
+              }
           }
       case None => throw new IllegalStateException("Photo does not exist")
     }
