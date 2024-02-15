@@ -36,16 +36,26 @@ class PhotoRepositorySpec extends DbUnitSpec {
     sqlu"""INSERT INTO photos (id, title, creator_id, file_name) VALUES(2, 'My great photo', ${mockUserId}, 'mock-photo-2.jpg')"""
   val createThirdPhotoAction =
     sqlu"""INSERT INTO photos (id, title, creator_id, file_name) VALUES(3, 'My great photo', ${mockUserIdTwo}, 'mock-photo-3')"""
+  val createFourthPhotoAction =
+    sqlu"""INSERT INTO photos (id, title, creator_id) VALUES(4, 'My great photo', ${mockUserId})"""
 
   def mockPresignUrl(
-    expectedFileName: String,
+    expectedFileName: Option[String],
     returnValue: Option[URL],
     callCount: Int
   ): Unit = {
-    (mockStorageRepository.preSignedUrl _)
-      .expects(*, expectedFileName)
-      .returning(Future(returnValue.get))
-      .repeated(callCount)
+    expectedFileName match {
+      case Some(fileName) =>
+        (mockStorageRepository.preSignedUrl _)
+          .expects(*, fileName)
+          .returning(Future(returnValue.get))
+          .repeated(callCount)
+      case None =>
+        (mockStorageRepository.preSignedUrl _)
+          .expects(*, *)
+          .returning(Future(returnValue.get))
+          .repeated(callCount)
+    }
   }
 
   describe("#create") {
@@ -98,7 +108,7 @@ class PhotoRepositorySpec extends DbUnitSpec {
     }
 
     it("should return a photo") {
-      mockPresignUrl("mock-photo-1.jpg", None, 1)
+      mockPresignUrl(Some("mock-photo-1.jpg"), None, 1)
 
       subject(1).map {
         case Some(_) => succeed
@@ -107,7 +117,7 @@ class PhotoRepositorySpec extends DbUnitSpec {
     }
 
     it("should add the pre-signed url to the source attribute") {
-      mockPresignUrl("mock-photo-1.jpg", Some(mockUrl), 1)
+      mockPresignUrl(Some("mock-photo-1.jpg"), Some(mockUrl), 1)
 
       subject(1).map {
         case Some(photo) => {
@@ -135,18 +145,19 @@ class PhotoRepositorySpec extends DbUnitSpec {
         _ <- db.run(createPhotoAction.transactionally)
         _ <- db.run(createSecondPhotoAction.transactionally)
         _ <- db.run(createThirdPhotoAction.transactionally)
+        _ <- db.run(createFourthPhotoAction.transactionally)
         photos <- repository.list(mockUserId)
       } yield photos
     }
 
     describe("when photos are found") {
       it("should return a list of photos") {
-        mockPresignUrl("mock-photo-1.jpg", None, 1)
-        mockPresignUrl("mock-photo-2.jpg", None, 1)
+        mockPresignUrl(Some("mock-photo-1.jpg"), None, 1)
+        mockPresignUrl(Some("mock-photo-2.jpg"), None, 1)
 
         subject(1).map {
           case (photos: List[_]) => {
-            assert(photos.length == 2)
+            assert(photos.length == 3)
             assert(photos.head.creatorId == mockUserId)
           }
           case _ => fail("Photos not found")
@@ -155,8 +166,8 @@ class PhotoRepositorySpec extends DbUnitSpec {
 
       describe("when the photos have a source") {
         it("should add the pre-signed url to the source attribute") {
-          mockPresignUrl("mock-photo-1.jpg", Some(mockUrl), 1)
-          mockPresignUrl("mock-photo-2.jpg", Some(mockUrl), 1)
+          mockPresignUrl(Some("mock-photo-1.jpg"), Some(mockUrl), 1)
+          mockPresignUrl(Some("mock-photo-2.jpg"), Some(mockUrl), 1)
 
           subject(1).map {
             case (photos: List[_]) => {
@@ -169,8 +180,8 @@ class PhotoRepositorySpec extends DbUnitSpec {
 
       describe("when the photos do not have a source") {
         it("should not add the pre-signed url to the source attribute") {
-          mockPresignUrl("mock-photo-1.jpg", None, 1)
-          mockPresignUrl("mock-photo-2.jpg", None, 1)
+          mockPresignUrl(None, None, 1)
+          mockPresignUrl(None, None, 1)
 
           subject(1).map {
             case (photos: List[_]) => {
@@ -295,7 +306,7 @@ class PhotoRepositorySpec extends DbUnitSpec {
       val session = db.createSession()
 
       it("should upload the file to the storage") {
-        mockPresignUrl("mock-photo-1.jpg", None, 1)
+        mockPresignUrl(Some("mock-photo-1.jpg"), None, 1)
         mockUploadObject()
 
         subject(1).map { result =>
@@ -304,7 +315,7 @@ class PhotoRepositorySpec extends DbUnitSpec {
       }
 
       it("should update the db photo with a filePath") {
-        mockPresignUrl("mock-photo-1.jpg", None, 1)
+        mockPresignUrl(Some("mock-photo-1.jpg"), None, 1)
         mockUploadObject()
 
         subject(1).map { _ =>
@@ -383,7 +394,7 @@ class PhotoRepositorySpec extends DbUnitSpec {
 
       describe("when the delete operation succeeds") {
         it("should delete the photo object from storage") {
-          mockPresignUrl("mock-photo-1.jpg", None, 1)
+          mockPresignUrl(Some("mock-photo-1.jpg"), None, 1)
           mockDeleteObject()
 
           subject(1).map { result =>
@@ -393,7 +404,7 @@ class PhotoRepositorySpec extends DbUnitSpec {
 
         describe("when the photo update succeeds") {
           it("should update the db photo with a fileName of null") {
-            mockPresignUrl("mock-photo-1.jpg", None, 1)
+            mockPresignUrl(Some("mock-photo-1.jpg"), None, 1)
             mockDeleteObject()
 
             subject(1).map { _ =>
@@ -409,7 +420,7 @@ class PhotoRepositorySpec extends DbUnitSpec {
 
       describe("when the delete operation fails") {
         it("should raise an exception") {
-          mockPresignUrl("mock-photo-1.jpg", None, 1)
+          mockPresignUrl(Some("mock-photo-1.jpg"), None, 1)
           (mockStorageRepository.deleteObject _)
             .expects(*, *)
             .returning(Future.failed(new Exception("Failed to delete object")))
