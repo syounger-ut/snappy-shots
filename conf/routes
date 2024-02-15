@@ -9,10 +9,10 @@ GET /api/photos                     com.authService.controllers.PhotosController
 GET /api/photos/:photoId            com.authService.controllers.PhotosController.getPhoto(photoId: Int)
 PUT /api/photos/:photoId            com.authService.controllers.PhotosController.updatePhoto(photoId: Int)
 DELETE /api/photos/:photoId         com.authService.controllers.PhotosController.deletePhoto(photoId: Int)
-POST /api/photos/:photoId/storage   com.authService.controllers.PhotosController.uploadPhotoObject(photoId: Int)
-
 #Storage routes
-DELETE /api/storage/fileName        com.authService.controllers.StorageController.delete(fileName: String)
+POST /api/photos/:photoId/storage   com.authService.controllers.PhotosController.uploadPhotoObject(photoId: Int)
+DELETE /api/photos/:photoId/storage com.authService.controllers.PhotosController.deletePhotoObject(photoId: Int)
+
 
 GET /auth/login                     com.authService.controllers.AuthenticationController.login()
 POST /auth/register                 com.authService.controllers.AuthenticationController.register()

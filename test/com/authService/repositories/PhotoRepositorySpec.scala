@@ -31,11 +31,11 @@ class PhotoRepositorySpec extends DbUnitSpec {
   val createSecondUserAction =
     sqlu"""INSERT INTO users (id, email, password) VALUES(2, 'bar@foo.com', 'password')"""
   val createPhotoAction =
-    sqlu"""INSERT INTO photos (id, title, creator_id) VALUES(1, 'My great photo', ${mockUserId})"""
+    sqlu"""INSERT INTO photos (id, title, creator_id, file_name) VALUES(1, 'My great photo', ${mockUserId}, 'mock-photo-1.jpg')"""
   val createSecondPhotoAction =
-    sqlu"""INSERT INTO photos (id, title, creator_id) VALUES(2, 'My great photo', ${mockUserId})"""
+    sqlu"""INSERT INTO photos (id, title, creator_id, file_name) VALUES(2, 'My great photo', ${mockUserId}, 'mock-photo-2.jpg')"""
   val createThirdPhotoAction =
-    sqlu"""INSERT INTO photos (id, title, creator_id) VALUES(3, 'My great photo', ${mockUserIdTwo})"""
+    sqlu"""INSERT INTO photos (id, title, creator_id, file_name) VALUES(3, 'My great photo', ${mockUserIdTwo}, 'mock-photo-3')"""
 
   def mockPresignUrl(returnValue: Option[URL], callCount: Int): Unit = {
     (mockStorageRepository.preSignedUrl _)
@@ -340,6 +340,76 @@ class PhotoRepositorySpec extends DbUnitSpec {
             .createStatement()
             .executeQuery("SELECT * FROM photos WHERE id = 1");
           assert(result.next())
+        }
+      }
+    }
+  }
+
+  describe("#deleteObject") {
+    def mockDeleteObject(): Unit = {
+      (mockStorageRepository.deleteObject _)
+        .expects(*, *)
+        .returning(Future.successful())
+    }
+
+    def subject(photoId: Int): Future[Unit] = {
+      for {
+        _ <- db.run(createUserAction.transactionally)
+        _ <- db.run(createPhotoAction.transactionally)
+        result <- repository.deleteObject(
+          photoId,
+          mockUserId
+        )
+      } yield result
+    }
+
+    describe("when the photo does not exists") {
+      it("should raise an exception") {
+        recoverToExceptionIf[IllegalStateException](subject(2)).map { result =>
+          result.getMessage should include("Photo does not exist")
+        }
+      }
+    }
+
+    describe("when the photo exists") {
+      val session = db.createSession()
+
+      describe("when the delete operation succeeds") {
+        it("should delete the photo object from storage") {
+          mockPresignUrl(None, 1)
+          mockDeleteObject()
+
+          subject(1).map { result =>
+            assert(result == ())
+          }
+        }
+
+        describe("when the photo update succeeds") {
+          it("should update the db photo with a fileName of null") {
+            mockPresignUrl(None, 1)
+            mockDeleteObject()
+
+            subject(1).map { _ =>
+              val result = session
+                .createStatement()
+                .executeQuery("SELECT * FROM photos WHERE id = 1");
+              assert(result.next())
+              assert(result.getString("file_name") == null)
+            }
+          }
+        }
+      }
+
+      describe("when the delete operation fails") {
+        it("should raise an exception") {
+          mockPresignUrl(None, 1)
+          (mockStorageRepository.deleteObject _)
+            .expects(*, *)
+            .returning(Future.failed(new Exception("Failed to delete object")))
+
+          recoverToExceptionIf[Exception](subject(1)).map { result =>
+            result.getMessage should include("Failed to delete object")
+          }
         }
       }
     }

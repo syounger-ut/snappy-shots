@@ -149,6 +149,25 @@ class PhotoRepository @Inject() (
     db.run(action)
   }
 
+  def deleteObject(photoId: Int, userId: Long): Future[Unit] = {
+    get(photoId, userId).flatMap {
+      case Some(photo) =>
+        storageRepository
+          .deleteObject("snappy-shots", photo.fileName.get)
+          .flatMap {
+            case () =>
+              update(photo.id, userId, photo.copy(fileName = None))
+                .flatMap {
+                  case Some(_) => Future.successful()
+                  case None =>
+                    throw new IllegalStateException("Failed to update photo")
+                }
+            case _ => throw new IllegalStateException("Failed to delete file")
+          }
+      case None => throw new IllegalStateException("Photo does not exist")
+    }
+  }
+
   private def uploadToStorage(
     photo: Photo,
     userId: Long,

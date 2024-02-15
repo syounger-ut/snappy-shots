@@ -133,6 +133,22 @@ class PhotosController @Inject() (
       }
   }
 
+  /*
+   * Delete a photo object
+   * @param photoId The identifier of the photo of which to its associated file
+   * @return Unit
+   */
+  def deletePhotoObject(photoId: Int): Action[AnyContent] = {
+    authAction.async { request =>
+      photosRepository
+        .deleteObject(photoId, request.userId)
+        .map(_ => Ok(Json.obj("message" -> "File deleted")))
+        .recover { case e: Throwable =>
+          BadRequest(Json.obj("message" -> e.getMessage))
+        }
+    }
+  }
+
   private def parsePhoto(json: JsValue, creatorId: Long): Photo = {
     Photo(
       id = 0,
