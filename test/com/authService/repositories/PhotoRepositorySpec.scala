@@ -103,6 +103,7 @@ class PhotoRepositorySpec extends DbUnitSpec {
         _ <- db.run(createSecondUserAction.transactionally)
         _ <- db.run(createPhotoAction.transactionally)
         _ <- db.run(createThirdPhotoAction.transactionally)
+        _ <- db.run(createFourthPhotoAction.transactionally)
         photo <- repository.get(photoId, 1)
       } yield photo
     }
@@ -116,14 +117,27 @@ class PhotoRepositorySpec extends DbUnitSpec {
       }
     }
 
-    it("should add the pre-signed url to the source attribute") {
-      mockPresignUrl(Some("mock-photo-1.jpg"), Some(mockUrl), 1)
+    describe("when there is a fileName") {
+      it("should add the pre-signed url to the source attribute") {
+        mockPresignUrl(Some("mock-photo-1.jpg"), Some(mockUrl), 1)
 
-      subject(1).map {
-        case Some(photo) => {
-          assert(photo.source.contains(mockUrl.toString))
+        subject(1).map {
+          case Some(photo) => {
+            assert(photo.source.contains(mockUrl.toString))
+          }
+          case None => fail("Photo should be found")
         }
-        case None => fail("Photo should be found")
+      }
+    }
+
+    describe("when there is not a fileName") {
+      it("should not add the pre-signed url to the source attribute") {
+        subject(4).map {
+          case Some(photo) => {
+            assert(photo.id == 4)
+          }
+          case None => fail("Photo should be found")
+        }
       }
     }
 
