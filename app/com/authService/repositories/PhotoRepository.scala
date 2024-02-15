@@ -49,12 +49,16 @@ class PhotoRepository @Inject() (
       photos <- db.run(query).map(_.toList)
       photosWithSources <- Future.sequence(
         photos.map(photo =>
-          storageRepository
-            .preSignedUrl("snappy-shots", photo.title)
-            .map(pre_signed_url =>
-              photo.copy(source = Some(pre_signed_url.toString))
-            )
-            .recover(_ => photo)
+          photo.fileName match {
+            case Some(fileName) =>
+              storageRepository
+                .preSignedUrl("snappy-shots", fileName)
+                .map(pre_signed_url =>
+                  photo.copy(source = Some(pre_signed_url.toString))
+                )
+                .recover(_ => photo)
+            case None => Future(photo)
+          }
         )
       )
     } yield photosWithSources
@@ -73,10 +77,14 @@ class PhotoRepository @Inject() (
       photo <- db.run(query)
       pre_signed_url <- photo match {
         case Some(photo) =>
-          storageRepository
-            .preSignedUrl("snappy-shots", photo.title)
-            .recover(_ => None)
-        case None => Future(None)
+          photo.fileName match {
+            case Some(fileName) =>
+              storageRepository
+                .preSignedUrl("snappy-shots", fileName)
+                .recover(_ => None)
+            case None => Future.successful(None)
+          }
+        case None => Future.successful(None)
       }
     } yield (photo, pre_signed_url) match {
       case (Some(photo), pre_signed_url) =>
