@@ -43,6 +43,7 @@ class PhotoRepository @Inject() (
   def list(userId: Long): Future[List[Photo]] = {
     val query = photos
       .filter(_.creatorId === userId)
+      .sortBy(_.id)
       .result
 
     for {
