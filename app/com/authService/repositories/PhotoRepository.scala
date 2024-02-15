@@ -187,15 +187,13 @@ class PhotoRepository @Inject() (
 
     storageRepository
       .uploadObject(bucketName, fileNameUpdate, file)
-      .flatMap {
-        case Success(result) =>
-          update(photo.id, userId, photo.copy(fileName = Some(fileNameUpdate)))
-            .flatMap {
-              case Some(p) => Future(Success(result))
-              case None =>
-                throw new IllegalStateException("Failed to update photo")
-            }
-        case Failure(exception) => Future.failed(exception)
+      .flatMap { case Success(result) =>
+        update(photo.id, userId, photo.copy(fileName = Some(fileNameUpdate)))
+          .flatMap {
+            case Some(p) => Future(Success(result))
+            case None =>
+              throw new IllegalStateException("Failed to update photo")
+          }
       }
   }
 }
