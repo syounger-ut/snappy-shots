@@ -319,25 +319,40 @@ class PhotoRepositorySpec extends DbUnitSpec {
     describe("when the photo exists") {
       val session = db.createSession()
 
-      it("should upload the file to the storage") {
-        mockPresignUrl(Some("mock-photo-1.jpg"), None, 1)
-        mockUploadObject()
+      describe("when the upload to storage succeeds") {
+        it("should upload the file to the storage") {
+          mockPresignUrl(Some("mock-photo-1.jpg"), None, 1)
+          mockUploadObject()
 
-        subject(1).map { result =>
-          assert(result.isSuccess)
+          subject(1).map { result =>
+            assert(result.isSuccess)
+          }
+        }
+
+        it("should update the db photo with a filePath") {
+          mockPresignUrl(Some("mock-photo-1.jpg"), None, 1)
+          mockUploadObject()
+
+          subject(1).map { _ =>
+            val result = session
+              .createStatement()
+              .executeQuery("SELECT * FROM photos WHERE id = 1");
+            assert(result.next())
+            assert(result.getString("file_name") == "1/jpg/1.jpg")
+          }
         }
       }
 
-      it("should update the db photo with a filePath") {
-        mockPresignUrl(Some("mock-photo-1.jpg"), None, 1)
-        mockUploadObject()
+      describe("when the upload to storage fails") {
+        it("should raise an exception") {
+          mockPresignUrl(Some("mock-photo-1.jpg"), None, 1)
+          (mockStorageRepository.uploadObject _)
+            .expects(*, *, *)
+            .returning(Future.failed(new Exception("Failed to upload object")))
 
-        subject(1).map { _ =>
-          val result = session
-            .createStatement()
-            .executeQuery("SELECT * FROM photos WHERE id = 1");
-          assert(result.next())
-          assert(result.getString("file_name") == "1/jpg/1.jpg")
+          recoverToExceptionIf[Exception](subject(1)).map { result =>
+            result.getMessage should include("Failed to upload object")
+          }
         }
       }
     }

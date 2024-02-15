@@ -193,9 +193,7 @@ class PhotoRepository @Inject() (
             .flatMap {
               case Some(p) => Future(Success(result))
               case None =>
-                Future.failed(
-                  new IllegalStateException("Failed to update photo")
-                )
+                throw new IllegalStateException("Failed to update photo")
             }
         case Failure(exception) => Future.failed(exception)
       }
