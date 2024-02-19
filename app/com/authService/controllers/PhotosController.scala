@@ -3,12 +3,13 @@ package com.authService.controllers
 import com.authService.auth.AuthAction
 import com.authService.models.Photo
 import com.authService.repositories._
+import play.api.libs.Files
 import play.api.libs.json._
 import play.api.mvc._
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Success, Try}
+import scala.util.{Failure, Success, Try}
 
 @Singleton
 class PhotosController @Inject() (
@@ -89,6 +90,37 @@ class PhotosController @Inject() (
   }
 
   /*
+   * Upload a photo object
+   * @param photoId The identifier of the photo to upload the object to
+   * @return The photo upload state
+   */
+  def uploadPhotoObject(
+    photoId: Int
+  ): Action[MultipartFormData[Files.TemporaryFile]] = {
+    authAction.async(parse.multipartFormData) { request =>
+      request.body.file("file") match {
+        case Some(file) =>
+          photosRepository
+            .uploadObject(
+              photoId,
+              request.userId,
+              file.filename,
+              file.ref.path.toFile
+            )
+            .map {
+              case Success(_) => Ok(Json.obj("message" -> "File uploaded"))
+              case Failure(e) => BadRequest(Json.obj("message" -> e.getMessage))
+            }
+            .recover { case e: Throwable =>
+              BadRequest(Json.obj("message" -> e.getMessage))
+            }
+        case None =>
+          Future.successful(BadRequest(Json.obj("message" -> "No file found")))
+      }
+    }
+  }
+
+  /*
    * Delete a photo
    * @param photoId The identifier of the photo to delete
    * @return The created photo
@@ -101,13 +133,29 @@ class PhotosController @Inject() (
       }
   }
 
+  /*
+   * Delete a photo object
+   * @param photoId The identifier of the photo of which to its associated file
+   * @return Unit
+   */
+  def deletePhotoObject(photoId: Int): Action[AnyContent] = {
+    authAction.async { request =>
+      photosRepository
+        .deleteObject(photoId, request.userId)
+        .map(_ => Ok(Json.obj("message" -> "File deleted")))
+        .recover { case e: Throwable =>
+          BadRequest(Json.obj("message" -> e.getMessage))
+        }
+    }
+  }
+
   private def parsePhoto(json: JsValue, creatorId: Long): Photo = {
     Photo(
       id = 0,
       title = (json \ "title").as[String],
       description = (json \ "description").asOpt[String],
       source = (json \ "source").asOpt[String],
-      creator_id = creatorId
+      creatorId = creatorId
     )
   }
 }

@@ -1,19 +1,24 @@
 package com.authService.controllers
 
+import com.amazonaws.services.s3.model.PutObjectResult
 import com.authService.UnitSpec
 import com.authService.auth.{AuthAction, AuthService}
 import com.authService.models.Photo
 import com.authService.repositories.PhotoRepository
+import play.api.libs.Files.TemporaryFile
 import play.api.libs.json.Json
+import play.api.mvc.MultipartFormData.FilePart
 import play.api.mvc._
 import play.api.test._
 import play.api.test.Helpers._
 
 import java.time.Instant
-import scala.util.Success
+import scala.util.{Failure, Success, Try}
 import scala.concurrent.Future
 
 class PhotosControllerSpec extends UnitSpec {
+  import scala.concurrent.ExecutionContext.Implicits.global
+
   val mockPhotoRepository: PhotoRepository = mock[PhotoRepository]
   val controllerComponents: ControllerComponents =
     Helpers.stubControllerComponents()
@@ -37,13 +42,13 @@ class PhotosControllerSpec extends UnitSpec {
   val mockDateTime: Instant = Instant.now()
   val mockPhoto: Option[Photo] = Some(
     Photo(
-      mockPhotoId,
-      "My wonderful photo",
-      Some("A beautiful photo scenery"),
-      Some("https://www.example.com/my-photo.jpg"),
-      mockUserId,
-      Some(mockDateTime),
-      Some(mockDateTime)
+      id = mockPhotoId,
+      title = "My wonderful photo",
+      description = Some("A beautiful photo scenery"),
+      source = Some("https://www.example.com/my-photo.jpg"),
+      creatorId = mockUserId,
+      createdAt = Some(mockDateTime),
+      updatedAt = Some(mockDateTime)
     )
   )
 
@@ -95,14 +100,14 @@ class PhotosControllerSpec extends UnitSpec {
           "title":"My wonderful photo",
           "description":"A beautiful photo scenery",
           "source":"https://www.example.com/my-photo.jpg",
-          "creator_id":${mockUserId}
+          "creatorId":${mockUserId}
         }"""
 
         val response = setupResponse(Some(requestBody))
         val responseStatus = status(response)
         val bodyText: String = contentAsString(response)
         assert(responseStatus == CREATED)
-        bodyText contains s"{\"id\":${mockPhotoId},\"title\":\"My wonderful photo\",\"description\":\"A beautiful photo scenery\",\"source\":\"https://www.example.com/my-photo.jpg\",\"creator_id\":${mockUserId}}"
+        bodyText contains s"{\"id\":${mockPhotoId},\"title\":\"My wonderful photo\",\"description\":\"A beautiful photo scenery\",\"source\":\"https://www.example.com/my-photo.jpg\",\"creatorId\":${mockUserId}}"
       }
     }
 
@@ -164,7 +169,7 @@ class PhotosControllerSpec extends UnitSpec {
         val bodyText: String = contentAsString(response)
         assert(responseStatus == OK)
         assert(
-          bodyText == s"{\"photos\":[{\"id\":${mockPhotoId},\"title\":\"My wonderful photo\",\"description\":\"A beautiful photo scenery\",\"source\":\"https://www.example.com/my-photo.jpg\",\"creator_id\":${mockUserId},\"created_at\":\"${mockDateTime.toString}\",\"updated_at\":\"${mockDateTime.toString}\"}]}"
+          bodyText == s"{\"photos\":[{\"id\":${mockPhotoId},\"title\":\"My wonderful photo\",\"description\":\"A beautiful photo scenery\",\"source\":\"https://www.example.com/my-photo.jpg\",\"creatorId\":${mockUserId},\"createdAt\":\"${mockDateTime.toString}\",\"updatedAt\":\"${mockDateTime.toString}\"}]}"
         )
       }
     }
@@ -211,7 +216,7 @@ class PhotosControllerSpec extends UnitSpec {
         val bodyText: String = contentAsString(response)
         assert(responseStatus == OK)
         assert(
-          bodyText == s"{\"id\":${mockPhotoId},\"title\":\"My wonderful photo\",\"description\":\"A beautiful photo scenery\",\"source\":\"https://www.example.com/my-photo.jpg\",\"creator_id\":${mockUserId},\"created_at\":\"${mockDateTime.toString}\",\"updated_at\":\"${mockDateTime.toString}\"}"
+          bodyText == s"{\"id\":${mockPhotoId},\"title\":\"My wonderful photo\",\"description\":\"A beautiful photo scenery\",\"source\":\"https://www.example.com/my-photo.jpg\",\"creatorId\":${mockUserId},\"createdAt\":\"${mockDateTime.toString}\",\"updatedAt\":\"${mockDateTime.toString}\"}"
         )
       }
     }
@@ -233,12 +238,12 @@ class PhotosControllerSpec extends UnitSpec {
       title = "Updated title",
       description = Some("A beautiful photo scenery"),
       source = Some("https://www.example.com/my-photo.jpg"),
-      creator_id = mockUserId
+      creatorId = mockUserId
     )
 
     val mockPhotoUpdateResponse = mockPhotoUpdate.copy(
-      created_at = Some(mockDateTime),
-      updated_at = Some(mockDateTime)
+      createdAt = Some(mockDateTime),
+      updatedAt = Some(mockDateTime)
     )
 
     val requestBodyGood = s"""{
@@ -246,7 +251,7 @@ class PhotosControllerSpec extends UnitSpec {
       "title":"Updated title",
       "description":"A beautiful photo scenery",
       "source":"https://www.example.com/my-photo.jpg",
-      "creator_id":${mockUserId}
+      "creatorId":${mockUserId}
     }"""
     val requestBodyBad = s"""{
       "title":"Missing required fields"
@@ -318,7 +323,7 @@ class PhotosControllerSpec extends UnitSpec {
           val bodyText: String = contentAsString(response)
           assert(responseStatus == OK)
           assert(
-            bodyText == s"{\"id\":${mockPhotoId},\"title\":\"Updated title\",\"description\":\"A beautiful photo scenery\",\"source\":\"https://www.example.com/my-photo.jpg\",\"creator_id\":${mockUserId},\"created_at\":\"${mockDateTime.toString}\",\"updated_at\":\"${mockDateTime.toString}\"}"
+            bodyText == s"{\"id\":${mockPhotoId},\"title\":\"Updated title\",\"description\":\"A beautiful photo scenery\",\"source\":\"https://www.example.com/my-photo.jpg\",\"creatorId\":${mockUserId},\"createdAt\":\"${mockDateTime.toString}\",\"updatedAt\":\"${mockDateTime.toString}\"}"
           )
         }
       }
@@ -335,6 +340,89 @@ class PhotosControllerSpec extends UnitSpec {
           val bodyText: String = contentAsString(response)
           assert(bodyText == s"{\"message\":\"Photo not updated\"}")
         }
+      }
+    }
+  }
+
+  describe("#uploadPhotoObject") {
+    val mockRequest = mock[Request[MultipartFormData[TemporaryFile]]]
+
+    def setupMockRequest(formData: MultipartFormData[TemporaryFile]): Unit = {
+      (mockRequest.headers _).expects().returns(Headers(authHeaders))
+      (mockRequest.body _).expects().returns(formData)
+    }
+
+    def mockUploadObject(returnValue: Try[PutObjectResult]): Unit = {
+      (mockPhotoRepository.uploadObject _)
+        .expects(*, *, *, *)
+        .returns(Future(returnValue))
+    }
+
+    def setupResponse(fileName: String) = {
+      setupAuth()
+
+      val tempFile = play.api.libs.Files.SingletonTemporaryFileCreator
+        .create("mock-photo", "txt")
+      val mockFile =
+        FilePart(fileName, "mock-file", Option("text/plain"), tempFile)
+      val formData = new MultipartFormData(
+        dataParts = Map("" -> Seq("mock_data")),
+        files = Seq(mockFile),
+        badParts = Seq()
+      )
+
+      setupMockRequest(formData)
+
+      controller
+        .uploadPhotoObject(1)
+        .apply(mockRequest)
+    }
+
+    describe("when a valid file is provided") {
+      describe("when the file upload succeeds") {
+        it("should return Ok") {
+          val mockObjectResult = Success(new PutObjectResult())
+          mockUploadObject(mockObjectResult)
+
+          val response = setupResponse("file")
+          assert(status(response) == OK)
+          val bodyText: String = contentAsString(response)
+          assert(bodyText == """{"message":"File uploaded"}""")
+        }
+      }
+
+      describe("when the file upload fails") {
+        it("should return Bad Request") {
+          val mockObjectResult = Failure(new Exception("mock-error"))
+          mockUploadObject(mockObjectResult)
+
+          val response = setupResponse("file")
+          assert(status(response) == BAD_REQUEST)
+          val bodyText: String = contentAsString(response)
+          assert(bodyText == """{"message":"mock-error"}""")
+        }
+      }
+
+      describe("when the file upload errors") {
+        it("should return Bad Request") {
+          (mockPhotoRepository.uploadObject _)
+            .expects(*, *, *, *)
+            .returns(Future.failed(new Exception("mock-error")))
+
+          val response = setupResponse("file")
+          assert(status(response) == BAD_REQUEST)
+          val bodyText: String = contentAsString(response)
+          assert(bodyText == """{"message":"mock-error"}""")
+        }
+      }
+    }
+
+    describe("when a valid file is not provided") {
+      it("should return Bad Request") {
+        val response = setupResponse("not-recognised-file-name")
+        assert(status(response) == BAD_REQUEST)
+        val bodyText: String = contentAsString(response)
+        assert(bodyText == """{"message":"No file found"}""")
       }
     }
   }
@@ -370,6 +458,47 @@ class PhotosControllerSpec extends UnitSpec {
         assert(responseStatus == NOT_FOUND)
         val bodyText: String = contentAsString(response)
         assert(bodyText == s"{\"message\":\"Photo not deleted\"}")
+      }
+    }
+  }
+
+  describe("#deletePhotoObject") {
+    def setupResponse(fileName: String) = {
+      setupAuth()
+
+      val request = FakeRequest().withHeaders(authHeaders)
+      controller
+        .deletePhotoObject(mockPhotoId)
+        .apply(request)
+    }
+
+    def mockDeleteObject(): Unit = {
+      (mockPhotoRepository.deleteObject _)
+        .expects(*, *)
+        .returns(Future(()))
+    }
+
+    describe("when the file is deleted") {
+      it("should return Ok") {
+        mockDeleteObject()
+
+        val response = setupResponse("file")
+        assert(status(response) == OK)
+        val bodyText: String = contentAsString(response)
+        assert(bodyText == """{"message":"File deleted"}""")
+      }
+    }
+
+    describe("when the file is not deleted") {
+      it("should return Bad Request") {
+        (mockPhotoRepository.deleteObject _)
+          .expects(*, *)
+          .returns(Future.failed(new Exception("mock-error")))
+
+        val response = setupResponse("file")
+        assert(status(response) == BAD_REQUEST)
+        val bodyText: String = contentAsString(response)
+        assert(bodyText == """{"message":"mock-error"}""")
       }
     }
   }
