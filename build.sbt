@@ -1,5 +1,5 @@
-name := """auth-service"""
-organization := "com.authService"
+name := """snappy-shots"""
+organization := "com.snappyShots"
 
 version := "1.0-SNAPSHOT"
 
