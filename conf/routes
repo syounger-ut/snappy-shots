@@ -1,18 +1,18 @@
-GET /api/ping                       com.authService.controllers.ApiController.ping()
-GET /api/post/:postId               com.authService.controllers.ApiController.getPost(postId: Int)
-GET /api/post/:postId/comments      com.authService.controllers.ApiController.getComments(postId: Int)
-GET /api/addUser                    com.authService.controllers.ApiController.addUser()
+GET /api/ping                       com.snappyShots.controllers.ApiController.ping()
+GET /api/post/:postId               com.snappyShots.controllers.ApiController.getPost(postId: Int)
+GET /api/post/:postId/comments      com.snappyShots.controllers.ApiController.getComments(postId: Int)
+GET /api/addUser                    com.snappyShots.controllers.ApiController.addUser()
 
 # Photo routes
-POST /api/photos                    com.authService.controllers.PhotosController.createPhoto()
-GET /api/photos                     com.authService.controllers.PhotosController.getPhotos()
-GET /api/photos/:photoId            com.authService.controllers.PhotosController.getPhoto(photoId: Int)
-PUT /api/photos/:photoId            com.authService.controllers.PhotosController.updatePhoto(photoId: Int)
-DELETE /api/photos/:photoId         com.authService.controllers.PhotosController.deletePhoto(photoId: Int)
+POST /api/photos                    com.snappyShots.controllers.PhotosController.createPhoto()
+GET /api/photos                     com.snappyShots.controllers.PhotosController.getPhotos()
+GET /api/photos/:photoId            com.snappyShots.controllers.PhotosController.getPhoto(photoId: Int)
+PUT /api/photos/:photoId            com.snappyShots.controllers.PhotosController.updatePhoto(photoId: Int)
+DELETE /api/photos/:photoId         com.snappyShots.controllers.PhotosController.deletePhoto(photoId: Int)
 #Storage routes
-POST /api/photos/:photoId/storage   com.authService.controllers.PhotosController.uploadPhotoObject(photoId: Int)
-DELETE /api/photos/:photoId/storage com.authService.controllers.PhotosController.deletePhotoObject(photoId: Int)
+POST /api/photos/:photoId/storage   com.snappyShots.controllers.PhotosController.uploadPhotoObject(photoId: Int)
+DELETE /api/photos/:photoId/storage com.snappyShots.controllers.PhotosController.deletePhotoObject(photoId: Int)
 
 
-GET /auth/login                     com.authService.controllers.AuthenticationController.login()
-POST /auth/register                 com.authService.controllers.AuthenticationController.register()
+GET /auth/login                     com.snappyShots.controllers.AuthenticationController.login()
+POST /auth/register                 com.snappyShots.controllers.AuthenticationController.register()

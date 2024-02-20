@@ -1,4 +1,4 @@
-import com.authService.repositories.{
+import com.snappyShots.repositories.{
   PhotoRepository,
   StorageAdapter,
   StorageRepository,
