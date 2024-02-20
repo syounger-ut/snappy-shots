@@ -1,11 +1,25 @@
+import org.scalajs.linker.interface.ModuleSplitStyle
+
 // Code coverage settings
 coverageFailOnMinimum := true
 coverageMinimumStmtTotal := 90
 coverageMinimumBranchTotal := 90
 coverageExcludedFiles := ".*\\/target\\/.*"
 
+lazy val commonSettings = Seq(
+  version := "1.0-SNAPSHOT",
+  scalaVersion := "2.13.12"
+)
+
+lazy val shared = crossProject(JSPlatform, JVMPlatform)
+  .in(file("."))
+  .settings(
+    name := "shared",
+    commonSettings
+  )
+
 val jwtScalaVersion = "9.4.4"
-lazy val snappyShotsService = (project in file("."))
+lazy val server = shared.jvm
   .enablePlugins(FlywayPlugin, PlayScala)
   .settings(
     name := """snappy-shots""",
@@ -51,4 +65,32 @@ lazy val snappyShotsService = (project in file("."))
     Test / flywayLocations := Seq(
       s"filesystem:conf/db/migration/${sys.env.getOrElse("SNAPPY_SHOTS_DB_NAME", "db_name")}"
     )
+  )
+
+lazy val client = shared.js
+  .enablePlugins(ScalaJSPlugin) // Enable the Scala.js plugin in this project
+  .settings(
+    scalaVersion := "3.2.2",
+
+    // Tell Scala.js that this is an application with a main method
+    scalaJSUseMainModuleInitializer := true,
+
+    /* Configure Scala.js to emit modules in the optimal way to
+     * connect to Vite's incremental reload.
+     * - emit ECMAScript modules
+     * - emit as many small modules as possible for classes in the "livechart" package
+     * - emit as few (large) modules as possible for all other classes
+     *   (in particular, for the standard library)
+     */
+    scalaJSLinkerConfig ~= {
+      _.withModuleKind(ModuleKind.ESModule)
+        .withModuleSplitStyle(
+          ModuleSplitStyle.SmallModulesFor(List("livechart"))
+        )
+    },
+
+    /* Depend on the scalajs-dom library.
+     * It provides static types for the browser DOM APIs.
+     */
+    libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "2.4.0"
   )
