@@ -4,17 +4,28 @@ Create shareable photo albums for your family & friends.
 
 ## Setup
 
-The project is built with Sbt and Scala.
+The project is built with Sbt, Scala, and ScalaJS.
 
 Compile:
 ```
 $ sbt compile
+$ npm install
 ```
 
-Run the app:
+Run the server:
 ```
 # Default port 9000
-$ sbt run
+$ sbt "sharedJVM/run 8080"
+```
+
+Run the client:
+```
+# Requires two windows to develop
+# Terminal one
+$ sbt "~fastLinkJS"
+
+#Terminal two
+$ npm run dev # default port 5173
 ```
 
 ## Tests
