@@ -5,18 +5,17 @@ lazy val commonSettings = Seq(
   scalaVersion := "2.13.12"
 )
 
-lazy val shared = crossProject(JSPlatform, JVMPlatform)
+lazy val snappyShots = crossProject(JSPlatform, JVMPlatform)
   .in(file("."))
   .settings(
-    name := "shared",
+    name := "snappyShots",
     commonSettings
   )
 
 val jwtScalaVersion = "9.4.4"
-lazy val server = shared.jvm
+lazy val server = snappyShots.jvm
   .enablePlugins(FlywayPlugin, PlayScala)
   .settings(
-    name := """snappy-shots""",
     organization := "com.snappyShots",
     version := "1.0-SNAPSHOT",
     scalaVersion := "2.13.12",
@@ -66,7 +65,7 @@ lazy val server = shared.jvm
     )
   )
 
-lazy val client = shared.js
+lazy val client = snappyShots.js
   .enablePlugins(ScalaJSPlugin) // Enable the Scala.js plugin in this project
   .settings(
     scalaVersion := "3.2.2",
