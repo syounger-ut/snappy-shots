@@ -46,7 +46,7 @@ lazy val server = shared.jvm
     flywayPassword := sys.env
       .getOrElse("SNAPPY_SHOTS_DB_PASSWORD", "db_password"),
     flywayLocations := Seq(
-      s"filesystem:conf/db/migration/${sys.env.getOrElse("SNAPPY_SHOTS_DB_NAME", "db_name")}"
+      s"filesystem:jvm/conf/db/migration/${sys.env.getOrElse("SNAPPY_SHOTS_DB_NAME", "db_name")}"
     ),
     flywayBaselineOnMigrate := true,
     flywayBaselineDescription := "Lets go!",
@@ -58,11 +58,11 @@ lazy val server = shared.jvm
     // Test setup
     Test / fork := true,
     Test / envVars := Map("ENVIRONMENT" -> "test"),
-    Test / flywayUrl := s"jdbc:h2:./test/db/${sys.env.getOrElse("SNAPPY_SHOTS_DB_NAME", "db_name")}_test;MODE=PostgreSQL;DATABASE_TO_UPPER=false;AUTO_SERVER=true",
+    Test / flywayUrl := s"jdbc:h2:./jvm/test/db/${sys.env.getOrElse("SNAPPY_SHOTS_DB_NAME", "db_name")}_test;MODE=PostgreSQL;DATABASE_TO_UPPER=false;AUTO_SERVER=true",
     Test / flywayUser := "test_user",
     Test / flywayPassword := "test_password",
     Test / flywayLocations := Seq(
-      s"filesystem:conf/db/migration/${sys.env.getOrElse("SNAPPY_SHOTS_DB_NAME", "db_name")}"
+      s"filesystem:jvm/conf/db/migration/${sys.env.getOrElse("SNAPPY_SHOTS_DB_NAME", "db_name")}"
     )
   )
 
