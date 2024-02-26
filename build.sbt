@@ -1,11 +1,5 @@
 import org.scalajs.linker.interface.ModuleSplitStyle
 
-// Code coverage settings
-coverageFailOnMinimum := true
-coverageMinimumStmtTotal := 90
-coverageMinimumBranchTotal := 90
-coverageExcludedFiles := ".*\\/target\\/.*;.*\\/js\\/.*"
-
 lazy val commonSettings = Seq(
   version := "1.0-SNAPSHOT",
   scalaVersion := "2.13.12"
@@ -26,6 +20,11 @@ lazy val server = shared.jvm
     organization := "com.snappyShots",
     version := "1.0-SNAPSHOT",
     scalaVersion := "2.13.12",
+    // Code coverage settings
+    coverageFailOnMinimum := true,
+    coverageMinimumStmtTotal := 90,
+    coverageMinimumBranchTotal := 90,
+    coverageExcludedFiles := ".*\\/target\\/.*",
     libraryDependencies ++= Seq(
       guice,
       "com.amazonaws" % "aws-java-sdk" % "1.12.646",
@@ -71,6 +70,8 @@ lazy val client = shared.js
   .enablePlugins(ScalaJSPlugin) // Enable the Scala.js plugin in this project
   .settings(
     scalaVersion := "3.2.2",
+    // Code coverage settings
+    coverageEnabled := false,
 
     // Tell Scala.js that this is an application with a main method
     scalaJSUseMainModuleInitializer := true,
