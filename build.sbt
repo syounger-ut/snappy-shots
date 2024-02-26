@@ -4,7 +4,7 @@ import org.scalajs.linker.interface.ModuleSplitStyle
 coverageFailOnMinimum := true
 coverageMinimumStmtTotal := 90
 coverageMinimumBranchTotal := 90
-coverageExcludedFiles := ".*\\/target\\/.*"
+coverageExcludedFiles := ".*\\/target\\/.*;.*\\/js\\/.*"
 
 lazy val commonSettings = Seq(
   version := "1.0-SNAPSHOT",
