@@ -9,7 +9,7 @@ target
 /.settings
 /RUNNING_PID
 /docker
-/test/db
+/jvm/test/db
 
 # FE ignores
 *.log
