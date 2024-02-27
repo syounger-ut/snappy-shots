@@ -1,11 +1,27 @@
 package snappyShots
 
 import com.raquo.laminar.api.L.{*, given}
+import scalacss.DevDefaults.*
+import snappyShots.laminar.*
+import snappyShots.styles.LoginStyles
+
+import scalacss.ProdDefaults._ // Always use prod settings
+
+// This will choose between dev/prod depending on:
+//   1. `sbt -Dscalacss.mode=dev` or `sbt -Dscalacss.mode=prod`
+//   2. Defaults to dev-mode unless in `fullOptJS`
+//
+val CssSettings = scalacss.devOrProdDefaults
+
+import CssSettings._
 
 import scala.scalajs.js
 import scala.scalajs.js.annotation.*
-
 import org.scalajs.dom
+
+import scala.language.postfixOps
+
+import scalacss.internal.mutable.GlobalRegistry
 
 // import javascriptLogo from "/javascript.svg"
 @js.native @JSImport("/javascript.svg", JSImport.Default)
@@ -13,58 +29,19 @@ val javascriptLogo: String = js.native
 
 @main
 def SnappyShots(): Unit =
+  // This is a hack to make sure the styles are loaded before the app is rendered
+  LoginStyles.addToDocument()
+
   renderOnDomContentLoaded(
     dom.document.getElementById("app"),
     Main.appElement()
   )
 
-def inputStyles = List(
-  display.block,
-  margin := "0 auto"
-)
-
-def buttonStyles = List(
-  display.block,
-  margin := "0 auto",
-  backgroundColor := "white",
-  color := "black",
-  padding := "10px 20px",
-  border := "none",
-  borderRadius := "5px",
-  cursor.pointer
-)
-
 object Main:
   def appElement(): Element =
     div(
       h1("Snappy Shots"),
-      form(
-        input(
-          tpe := "email",
-          placeholder := "Email",
-          onInput.mapToValue --> { value =>
-            println(s"Input value: $value")
-          },
-          inputStyles
-        ),
-        input(
-          tpe := "password",
-          placeholder := "Password",
-          onInput.mapToValue --> { value =>
-            println(s"Input value: $value")
-          },
-          inputStyles
-        ),
-        input(
-          tpe := "submit",
-          value := "Login",
-          onClick --> { event =>
-            event.preventDefault()
-            println("Login clicked")
-          },
-          buttonStyles
-        )
-      ),
+      LoginForm.appElement(),
       a(
         href := "https://vitejs.dev",
         target := "_blank",
