@@ -18,9 +18,53 @@ def SnappyShots(): Unit =
     Main.appElement()
   )
 
+def inputStyles = List(
+  display.block,
+  margin := "0 auto"
+)
+
+def buttonStyles = List(
+  display.block,
+  margin := "0 auto",
+  backgroundColor := "white",
+  color := "black",
+  padding := "10px 20px",
+  border := "none",
+  borderRadius := "5px",
+  cursor.pointer
+)
+
 object Main:
   def appElement(): Element =
     div(
+      h1("Snappy Shots"),
+      form(
+        input(
+          tpe := "email",
+          placeholder := "Email",
+          onInput.mapToValue --> { value =>
+            println(s"Input value: $value")
+          },
+          inputStyles
+        ),
+        input(
+          tpe := "password",
+          placeholder := "Password",
+          onInput.mapToValue --> { value =>
+            println(s"Input value: $value")
+          },
+          inputStyles
+        ),
+        input(
+          tpe := "submit",
+          value := "Login",
+          onClick --> { event =>
+            event.preventDefault()
+            println("Login clicked")
+          },
+          buttonStyles
+        )
+      ),
       a(
         href := "https://vitejs.dev",
         target := "_blank",
