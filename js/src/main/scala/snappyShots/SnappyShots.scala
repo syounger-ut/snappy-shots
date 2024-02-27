@@ -1,4 +1,4 @@
-package livechart
+package snappyShots
 
 import scala.scalajs.js
 import scala.scalajs.js.annotation.*
@@ -10,7 +10,7 @@ import org.scalajs.dom
 val javascriptLogo: String = js.native
 
 @main
-def LiveChart(): Unit =
+def SnappyShots(): Unit =
   dom.document.querySelector("#app").innerHTML = s"""
     <div>
       <a href="https://vitejs.dev" target="_blank">
@@ -30,7 +30,7 @@ def LiveChart(): Unit =
   """
 
   setupCounter(dom.document.getElementById("counter"))
-end LiveChart
+end SnappyShots
 
 def setupCounter(element: dom.Element): Unit =
   var counter = 0

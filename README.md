@@ -15,7 +15,7 @@ $ npm install
 Run the server:
 ```
 # Default port 9000
-$ sbt "snappyShots/run 8080"
+$ sbt "snappyShotsJVM/run 8080"
 ```
 
 Run the client:

@@ -85,7 +85,7 @@ lazy val client = snappyShots.js
     scalaJSLinkerConfig ~= {
       _.withModuleKind(ModuleKind.ESModule)
         .withModuleSplitStyle(
-          ModuleSplitStyle.SmallModulesFor(List("livechart"))
+          ModuleSplitStyle.SmallModulesFor(List("snappyShots"))
         )
     },
 
