@@ -1,5 +1,7 @@
 package snappyShots
 
+import com.raquo.laminar.api.L.{*, given}
+
 import scala.scalajs.js
 import scala.scalajs.js.annotation.*
 
@@ -11,34 +13,41 @@ val javascriptLogo: String = js.native
 
 @main
 def SnappyShots(): Unit =
-  dom.document.querySelector("#app").innerHTML = s"""
-    <div>
-      <a href="https://vitejs.dev" target="_blank">
-        <img src="/vite.svg" class="logo" alt="Vite logo" />
-      </a>
-      <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">
-        <img src="$javascriptLogo" class="logo vanilla" alt="JavaScript logo" />
-      </a>
-      <h1>Hello Scala.js!</h1>
-      <div class="card">
-        <button id="counter" type="button"></button>
-      </div>
-      <p class="read-the-docs">
-        Click on the Vite logo to learn more
-      </p>
-    </div>
-  """
+  renderOnDomContentLoaded(
+    dom.document.getElementById("app"),
+    Main.appElement()
+  )
 
-  setupCounter(dom.document.getElementById("counter"))
-end SnappyShots
+object Main:
+  def appElement(): Element =
+    div(
+      a(
+        href := "https://vitejs.dev",
+        target := "_blank",
+        img(src := "/vite.svg", className := "logo", alt := "Vite logo")
+      ),
+      a(
+        href := "https://developer.mozilla.org/en-US/docs/Web/JavaScript",
+        target := "_blank",
+        img(
+          src := javascriptLogo,
+          className := "logo vanilla",
+          alt := "JavaScript logo"
+        )
+      ),
+      h1("Hello Laminar!"),
+      counterButton(),
+      p(className := "read-the-docs", "Click on the Vite logo to learn more")
+    )
+  end appElement
+end Main
 
-def setupCounter(element: dom.Element): Unit =
-  var counter = 0
-
-  def setCounter(count: Int): Unit =
-    counter = count
-    element.innerHTML = s"count is $counter"
-
-  element.addEventListener("click", e => setCounter(counter + 1))
-  setCounter(0)
-end setupCounter
+def counterButton(): Element =
+  val counter = Var(0)
+  button(
+    tpe := "button",
+    "count is ",
+    child.text <-- counter,
+    onClick --> { event => counter.update(c => c + 1) }
+  )
+end counterButton
