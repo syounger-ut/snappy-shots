@@ -4,17 +4,28 @@ Create shareable photo albums for your family & friends.
 
 ## Setup
 
-The project is built with Sbt and Scala.
+The project is built with Sbt, Scala, and ScalaJS.
 
 Compile:
 ```
 $ sbt compile
+$ npm install
 ```
 
-Run the app:
+Run the server:
 ```
 # Default port 9000
-$ sbt run
+$ sbt "snappyShots/run 8080"
+```
+
+Run the client:
+```
+# Requires two windows to develop
+# Terminal one
+$ sbt "~fastLinkJS"
+
+#Terminal two
+$ npm run dev # default port 5173
 ```
 
 ## Tests
@@ -39,4 +50,4 @@ The project uses Flyway for database migrations. To run the migrations:
 $ sbt flywayMigrate
 ```
 
-New migration files are added to `./conf/db/migration/auth_service`. The file must be prefixed with `Vxx__<script_name>.sql`. The `xx` is a version number, and must be unique and sequential.
+New migration files are added to `./jvm/conf/db/migration/snappy_shots`. The file must be prefixed with `Vxx__<script_name>.sql`. The `xx` is a version number, and must be unique and sequential.
