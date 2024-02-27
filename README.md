@@ -15,7 +15,7 @@ $ npm install
 Run the server:
 ```
 # Default port 9000
-$ sbt "sharedJVM/run 8080"
+$ sbt "snappyShots/run 8080"
 ```
 
 Run the client:
@@ -50,4 +50,4 @@ The project uses Flyway for database migrations. To run the migrations:
 $ sbt flywayMigrate
 ```
 
-New migration files are added to `./conf/db/migration/auth_service`. The file must be prefixed with `Vxx__<script_name>.sql`. The `xx` is a version number, and must be unique and sequential.
+New migration files are added to `./jvm/conf/db/migration/snappy_shots`. The file must be prefixed with `Vxx__<script_name>.sql`. The `xx` is a version number, and must be unique and sequential.
