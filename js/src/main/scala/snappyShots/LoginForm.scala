@@ -7,24 +7,35 @@ import snappyShots.styles.LoginStyles
 
 import scala.language.postfixOps
 
+import CssSettings._
+
 object LoginForm:
   def appElement(): Element =
+    LoginStyles.addToDocument()
     form(
-      input(
-        tpe := "email",
-        placeholder := "Email",
-        onInput.mapToValue --> { value =>
-          println(s"Input value: $value")
-        },
-        LoginStyles.inputStyles
+      textAlign.left,
+      label(
+        "Email",
+        input(
+          tpe := "email",
+          placeholder := "clark.kent@krypton.com",
+          onInput.mapToValue --> { value =>
+            println(s"Input value: $value")
+          },
+          LoginStyles.inputStyles
+        )
       ),
-      input(
-        tpe := "password",
-        placeholder := "Password",
-        onInput.mapToValue --> { value =>
-          println(s"Input value: $value")
-        },
-        LoginStyles.inputStyles
+      label(
+        "Password",
+        input(
+          tpe := "password",
+          formId := "password",
+          placeholder := "fasterThanASpeedingTrain",
+          onInput.mapToValue --> { value =>
+            println(s"Input value: $value")
+          },
+          LoginStyles.inputStyles
+        )
       ),
       input(
         tpe := "submit",

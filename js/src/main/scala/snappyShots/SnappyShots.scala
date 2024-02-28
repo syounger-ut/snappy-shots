@@ -1,9 +1,9 @@
 package snappyShots
 
 import com.raquo.laminar.api.L.{*, given}
-import scalacss.DevDefaults.*
-import snappyShots.laminar.*
-import snappyShots.styles.LoginStyles
+import scalacss.DevDefaults._
+import snappyShots.laminar._
+import snappyShots.styles._
 
 import scalacss.ProdDefaults._ // Always use prod settings
 
@@ -21,16 +21,13 @@ import org.scalajs.dom
 
 import scala.language.postfixOps
 
-import scalacss.internal.mutable.GlobalRegistry
-
 // import javascriptLogo from "/javascript.svg"
 @js.native @JSImport("/javascript.svg", JSImport.Default)
 val javascriptLogo: String = js.native
 
 @main
 def SnappyShots(): Unit =
-  // This is a hack to make sure the styles are loaded before the app is rendered
-  LoginStyles.addToDocument()
+  GlobalStyles.addToDocument()
 
   renderOnDomContentLoaded(
     dom.document.getElementById("app"),
