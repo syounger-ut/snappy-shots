@@ -8,7 +8,6 @@ object LoginStyles extends StyleSheet.Inline {
   val inputStyles: StyleA = style(
     display.block,
     margin(0.px, auto, 10.px, 0.px),
-    backgroundColor(Color("yellow")),
     color(Color("black")),
     padding(5.px),
     width(100.%%)
@@ -17,7 +16,7 @@ object LoginStyles extends StyleSheet.Inline {
   val buttonStyles: StyleA = style(
     display.block,
     margin(0.px, auto),
-    backgroundColor(Color("white")),
+    backgroundColor(Color("lightgrey")),
     color(Color("black")),
     padding(10.px, 20.px),
     borderRadius(5.px),
