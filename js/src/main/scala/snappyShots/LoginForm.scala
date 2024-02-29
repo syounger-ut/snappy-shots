@@ -5,6 +5,7 @@ import CssSettings._
 import upickle.default._
 import snappyShots.laminar._
 import snappyShots.styles.LoginStyles
+import org.scalajs.dom
 
 object LoginForm:
   case class Login(email: String, password: String) derives ReadWriter
@@ -53,6 +54,10 @@ object LoginForm:
             )
             .map((ev, _))
         ) --> { case (ev, responseText) =>
+          dom.window.localStorage.setItem(
+            "token",
+            ujson.read(responseText)("token").str
+          )
           println(responseText)
         },
         LoginStyles.buttonStyles
