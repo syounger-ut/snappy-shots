@@ -95,6 +95,7 @@ lazy val client = snappyShots.js
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % "2.4.0",
       "com.raquo" %%% "laminar" % "15.0.1",
-      "com.github.japgolly.scalacss" %%% "core" % "1.0.0-RC2"
+      "com.github.japgolly.scalacss" %%% "core" % "1.0.0-RC2",
+      "com.lihaoyi" %%% "upickle" % "3.0.0"
     )
   )
