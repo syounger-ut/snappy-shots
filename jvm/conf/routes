@@ -14,5 +14,5 @@ POST /api/photos/:photoId/storage   com.snappyShots.controllers.PhotosController
 DELETE /api/photos/:photoId/storage com.snappyShots.controllers.PhotosController.deletePhotoObject(photoId: Int)
 
 
-GET /auth/login                     com.snappyShots.controllers.AuthenticationController.login()
+POST /auth/login                     com.snappyShots.controllers.AuthenticationController.login()
 POST /auth/register                 com.snappyShots.controllers.AuthenticationController.register()
