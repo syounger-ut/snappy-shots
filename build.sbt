@@ -85,12 +85,17 @@ lazy val client = snappyShots.js
     scalaJSLinkerConfig ~= {
       _.withModuleKind(ModuleKind.ESModule)
         .withModuleSplitStyle(
-          ModuleSplitStyle.SmallModulesFor(List("livechart"))
+          ModuleSplitStyle.SmallModulesFor(List("snappyShots"))
         )
     },
 
     /* Depend on the scalajs-dom library.
      * It provides static types for the browser DOM APIs.
      */
-    libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "2.4.0"
+    libraryDependencies ++= Seq(
+      "org.scala-js" %%% "scalajs-dom" % "2.4.0",
+      "com.raquo" %%% "laminar" % "15.0.1",
+      "com.github.japgolly.scalacss" %%% "core" % "1.0.0-RC2",
+      "com.lihaoyi" %%% "upickle" % "3.0.0"
+    )
   )
