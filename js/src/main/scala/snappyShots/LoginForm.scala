@@ -1,16 +1,14 @@
 package snappyShots
 
 import com.raquo.laminar.api.L.{_, given}
-import scalacss.internal.mutable.GlobalRegistry
+import CssSettings._
+import upickle.default._
 import snappyShots.laminar._
 import snappyShots.styles.LoginStyles
 
-import scala.language.postfixOps
-import CssSettings._
-import org.scalajs.dom.FormData
-
 object LoginForm:
-  case class Login(email: String, password: String)
+  case class Login(email: String, password: String) derives ReadWriter
+
   var login = Var(Login("", ""))
 
   def appElement(): Element =
@@ -48,8 +46,10 @@ object LoginForm:
         onClick.flatMap(ev =>
           ev.preventDefault()
           FetchStream
-            .get(
-              "http://localhost:8080/api/login"
+            .post(
+              "http://localhost:8080/auth/login",
+              _.headers("Content-Type" -> "application/json"),
+              _.body(write(login.now()))
             )
             .map((ev, _))
         ) --> { case (ev, responseText) =>
