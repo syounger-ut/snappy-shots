@@ -12,7 +12,7 @@ object LoginForm:
 
   var login = Var(Login("", ""))
 
-  def appElement(): Element =
+  def appElement(setIsLoggedIn: () => Unit): Element =
     LoginStyles.addToDocument()
     form(
       textAlign.left,
@@ -58,6 +58,7 @@ object LoginForm:
             "token",
             ujson.read(responseText)("token").str
           )
+          setIsLoggedIn()
           println(responseText)
         },
         LoginStyles.buttonStyles

@@ -29,10 +29,33 @@ def SnappyShots(): Unit =
   )
 
 object Main:
+  private val loggedIn = Var(false)
+
   def appElement(): Element =
-    div(
+    setIsLoggedIn()
+
+    val loginForm = div(
       h1("Snappy Shots"),
-      LoginForm.appElement()
+      LoginForm.appElement(setIsLoggedIn)
+    )
+    val welcomePage = div(
+      h1("Snappy Shots"),
+      div("Welcome to Snappy Shots!")
+    )
+
+    div(
+      child <-- loggedIn.signal.map {
+        case true  => welcomePage
+        case false => loginForm
+      }
     )
   end appElement
+
+  private def setIsLoggedIn(): Unit =
+    loggedIn.set(isLoggedIn)
+  end setIsLoggedIn
+
+  private def isLoggedIn: Boolean =
+    dom.window.localStorage.getItem("token") != null
+  end isLoggedIn
 end Main
