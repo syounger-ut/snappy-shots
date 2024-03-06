@@ -13,8 +13,6 @@ import scalacss.ProdDefaults._ // Always use prod settings
 //
 val CssSettings = scalacss.devOrProdDefaults
 
-import CssSettings._
-
 import scala.scalajs.js
 import scala.scalajs.js.annotation.*
 import org.scalajs.dom
