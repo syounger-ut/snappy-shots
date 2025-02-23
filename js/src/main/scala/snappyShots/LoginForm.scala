@@ -4,7 +4,7 @@ import com.raquo.laminar.api.L.{_, given}
 import CssSettings._
 import upickle.default._
 import snappyShots.laminar._
-import snappyShots.styles.LoginStyles
+//import snappyShots.styles.LoginStyles
 import org.scalajs.dom
 
 object LoginForm:
@@ -13,7 +13,9 @@ object LoginForm:
   var login = Var(Login("", ""))
 
   def appElement(setIsLoggedIn: () => Unit): Element =
-    LoginStyles.addToDocument()
+    println("ONE")
+//    LoginStyles.addToDocument()
+    println("TWO")
     form(
       textAlign.left,
       label(
@@ -24,8 +26,8 @@ object LoginForm:
           onInput.mapToValue --> { value =>
             login.update(_.copy(email = value))
             println(s"Input value: $value")
-          },
-          LoginStyles.inputStyles
+          }
+//          LoginStyles.inputStyles
         )
       ),
       label(
@@ -37,8 +39,8 @@ object LoginForm:
           onInput.mapToValue --> { value =>
             login.update(_.copy(password = value))
             println(s"Input value: $value")
-          },
-          LoginStyles.inputStyles
+          }
+//          LoginStyles.inputStyles
         )
       ),
       input(
@@ -60,8 +62,8 @@ object LoginForm:
           )
           setIsLoggedIn()
           println(responseText)
-        },
-        LoginStyles.buttonStyles
+        }
+//        LoginStyles.buttonStyles
       ),
       h1(
         "",
